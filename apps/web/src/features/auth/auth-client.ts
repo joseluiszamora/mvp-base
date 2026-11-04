@@ -44,7 +44,7 @@ import type {
   EmailDeliverySummary,
   EmailTemplateSummary,
   NotificationAccessResponse,
-} from "@mvp-transporte/contracts";
+} from "@mvp-base/contracts";
 
 const csrfCookieName = "mvp_csrf";
 const authChannelName = "mvp-transporte-auth";

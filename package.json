@@ -1,5 +1,5 @@
 {
-  "name": "mvp-transporte",
+  "name": "mvp-base",
   "version": "0.1.0",
   "private": true,
   "packageManager": "npm@11.17.0",
@@ -13,21 +13,21 @@
     "packages/contracts"
   ],
   "scripts": {
-    "dev:api": "npm run dev --workspace @mvp-transporte/api",
-    "dev:web": "npm run dev --workspace @mvp-transporte/web",
-    "dev:email-worker": "npm run worker:email:dev --workspace @mvp-transporte/api",
-    "worker:email": "npm run build --workspace @mvp-transporte/api && npm run worker:email --workspace @mvp-transporte/api",
-    "files:cleanup": "npm run files:cleanup --workspace @mvp-transporte/api",
-    "bootstrap:platform-admin": "npm run bootstrap:platform-admin --workspace @mvp-transporte/api",
-    "db:generate": "npm run db:generate --workspace @mvp-transporte/api",
-    "db:migrate:dev": "npm run db:migrate:dev --workspace @mvp-transporte/api",
-    "db:migrate:deploy": "npm run db:migrate:deploy --workspace @mvp-transporte/api",
-    "db:seed": "npm run db:seed --workspace @mvp-transporte/api",
+    "dev:api": "npm run dev --workspace @mvp-base/api",
+    "dev:web": "npm run dev --workspace @mvp-base/web",
+    "dev:email-worker": "npm run worker:email:dev --workspace @mvp-base/api",
+    "worker:email": "npm run build --workspace @mvp-base/api && npm run worker:email --workspace @mvp-base/api",
+    "files:cleanup": "npm run files:cleanup --workspace @mvp-base/api",
+    "bootstrap:platform-admin": "npm run bootstrap:platform-admin --workspace @mvp-base/api",
+    "db:generate": "npm run db:generate --workspace @mvp-base/api",
+    "db:migrate:dev": "npm run db:migrate:dev --workspace @mvp-base/api",
+    "db:migrate:deploy": "npm run db:migrate:deploy --workspace @mvp-base/api",
+    "db:seed": "npm run db:seed --workspace @mvp-base/api",
     "lint": "biome lint .",
-    "typecheck": "npm run build --workspace @mvp-transporte/contracts && npm run typecheck --workspace @mvp-transporte/api && npm run typecheck --workspace @mvp-transporte/web",
-    "test": "npm run build --workspace @mvp-transporte/contracts && npm run test --workspace @mvp-transporte/api",
-    "build": "npm run build --workspace @mvp-transporte/contracts && npm run build --workspace @mvp-transporte/api && npm run build --workspace @mvp-transporte/web",
-    "test:integration": "npm run build --workspace @mvp-transporte/contracts && npm run build --workspace @mvp-transporte/api && node scripts/test-integration.mjs"
+    "typecheck": "npm run build --workspace @mvp-base/contracts && npm run typecheck --workspace @mvp-base/api && npm run typecheck --workspace @mvp-base/web",
+    "test": "npm run build --workspace @mvp-base/contracts && npm run test --workspace @mvp-base/api",
+    "build": "npm run build --workspace @mvp-base/contracts && npm run build --workspace @mvp-base/api && npm run build --workspace @mvp-base/web",
+    "test:integration": "npm run build --workspace @mvp-base/contracts && npm run build --workspace @mvp-base/api && node scripts/test-integration.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

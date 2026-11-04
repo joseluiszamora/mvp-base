@@ -1,5 +1,5 @@
 # TASK-012 — Administración de correo
-Estado: integrado en `main` por PR #27 (merge commit `dd0b20c458e952b5c0af50df65e2ebf2674f90be`); CI #41 aprobada. Dependencias: TASK-011 integrada y aceptada. Issue GitHub: [#12](https://github.com/joseluiszamora/mvp-transporte/issues/12) abierta; aceptación funcional pendiente.
+Estado: integrado en `main` por PR #27 (merge commit `dd0b20c458e952b5c0af50df65e2ebf2674f90be`); CI #41 aprobada. Dependencias: TASK-011 integrada y aceptada. Issue GitHub: [#12](https://github.com/joseluiszamora/mvp-base/issues/12) abierta; aceptación funcional pendiente.
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

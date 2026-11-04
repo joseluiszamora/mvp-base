@@ -437,7 +437,7 @@ async function verifyAuditAndEmail(database, smtpPort, mailpitHttpPort) {
     SMTP_PORT: String(smtpPort),
     SMTP_SECURE: "false",
     SMTP_REQUIRE_TLS: "false",
-    SMTP_FROM: "MVP Transporte <no-reply@example.test>",
+    SMTP_FROM: "MVP Base <no-reply@example.test>",
   });
   try {
     const delivered = await processOutboxBatch(database, smtpSender, retryOptions);
@@ -669,7 +669,7 @@ async function deliverQueuedAuthMessages(database, smtpPort, encryptionKey) {
     SMTP_PORT: String(smtpPort),
     SMTP_SECURE: "false",
     SMTP_REQUIRE_TLS: "false",
-    SMTP_FROM: "MVP Transporte <no-reply@example.test>",
+    SMTP_FROM: "MVP Base <no-reply@example.test>",
   });
   try {
     const result = await processOutboxBatch(database, sender, { encryptionKey, batchSize: 25, maxAttempts: 5, leaseMs: 1_000 });
@@ -1884,7 +1884,7 @@ async function verifyAuthentication(database, smtpPort, mailpitHttpPort, createA
     const { createSmtpEmailSender } = await import("../apps/api/dist/modules/email/smtp-transport.js");
     const sender = createSmtpEmailSender({
       SMTP_HOST: "127.0.0.1", SMTP_PORT: String(smtpPort), SMTP_SECURE: "false",
-      SMTP_REQUIRE_TLS: "false", SMTP_FROM: "MVP Transporte <no-reply@example.test>",
+      SMTP_REQUIRE_TLS: "false", SMTP_FROM: "MVP Base <no-reply@example.test>",
     });
     try {
       const sent = await processOutboxBatch(database, sender, { encryptionKey, batchSize: 25, maxAttempts: 5, leaseMs: 1_000 });
@@ -1918,7 +1918,7 @@ async function verifyAuthentication(database, smtpPort, mailpitHttpPort, createA
     assert.equal(platformLogin.response.status, 200);
     const smtpConfiguration = await apiRequest(baseUrl, "/notifications/smtp", {
       method: "PUT", accessToken: platformLogin.body.accessToken,
-      body: { host: "127.0.0.1", port: smtpPort, secure: false, requireTls: false, fromAddress: "MVP Transporte <no-reply@example.test>" },
+      body: { host: "127.0.0.1", port: smtpPort, secure: false, requireTls: false, fromAddress: "MVP Base <no-reply@example.test>" },
     });
     assert.equal(smtpConfiguration.response.status, 200, "Solo plataforma configura SMTP de instalación.");
     assert.equal(smtpConfiguration.body.source, "DATABASE");
@@ -1997,7 +1997,7 @@ async function verifyAuthentication(database, smtpPort, mailpitHttpPort, createA
     const smtpSecret = `task012-smtp-secret-${marker}`;
     const smtpWithCredential = await apiRequest(baseUrl, "/notifications/smtp", {
       method: "PUT", accessToken: platformLogin.body.accessToken,
-      body: { host: "127.0.0.1", port: smtpPort, secure: false, requireTls: true, fromAddress: "MVP Transporte <no-reply@example.test>", username: "smtp-test-user", password: smtpSecret },
+      body: { host: "127.0.0.1", port: smtpPort, secure: false, requireTls: true, fromAddress: "MVP Base <no-reply@example.test>", username: "smtp-test-user", password: smtpSecret },
     });
     assert.equal(smtpWithCredential.response.status, 200);
     assert.equal(smtpWithCredential.body.passwordConfigured, true);
@@ -2008,7 +2008,7 @@ async function verifyAuthentication(database, smtpPort, mailpitHttpPort, createA
     assert.notEqual(persistedSmtpSecret.rows[0].password_envelope.ciphertext, smtpSecret);
     const clearedSmtpSecret = await apiRequest(baseUrl, "/notifications/smtp", {
       method: "PUT", accessToken: platformLogin.body.accessToken,
-      body: { host: "127.0.0.1", port: smtpPort, secure: false, requireTls: false, fromAddress: "MVP Transporte <no-reply@example.test>", username: null, clearPassword: true },
+      body: { host: "127.0.0.1", port: smtpPort, secure: false, requireTls: false, fromAddress: "MVP Base <no-reply@example.test>", username: null, clearPassword: true },
     });
     assert.equal(clearedSmtpSecret.response.status, 200);
     assert.equal(clearedSmtpSecret.body.passwordConfigured, false, "El borrado requiere una acción explícita.");
@@ -2228,7 +2228,7 @@ do {
 } while (hostPorts.mailpitHttp === hostPorts.postgres || hostPorts.mailpitHttp === hostPorts.mailpitSmtp);
 let server;
 let databasePool;
-const fileStorageRoot = await mkdtemp(join(tmpdir(), "mvp-transporte-files-"));
+const fileStorageRoot = await mkdtemp(join(tmpdir(), "mvp-base-files-"));
 let composeMayExist = false;
 
 try {
@@ -2242,8 +2242,8 @@ try {
     NODE_ENV: "test",
     MVP_TEST_DATABASE: "true",
   };
-  runNpmScript(["run", "db:migrate:deploy", "--workspace", "@mvp-transporte/api"], migrationEnvironment);
-  runNpmScript(["run", "db:seed", "--workspace", "@mvp-transporte/api"], migrationEnvironment);
+  runNpmScript(["run", "db:migrate:deploy", "--workspace", "@mvp-base/api"], migrationEnvironment);
+  runNpmScript(["run", "db:seed", "--workspace", "@mvp-base/api"], migrationEnvironment);
 
   const { createApp } = await import("../apps/api/dist/app.js");
   const { createDatabasePool } = await import("../apps/api/dist/database.js");

@@ -1,5 +1,5 @@
 {
-  "name": "@mvp-transporte/contracts",
+  "name": "@mvp-base/contracts",
   "version": "0.1.0",
   "private": true,
   "type": "module",

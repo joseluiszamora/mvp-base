@@ -18,7 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { OrganizationStatus } from "@mvp-transporte/contracts";
+import type { OrganizationStatus } from "@mvp-base/contracts";
 import { listPlatformOrganizations, updatePlatformOrganization } from "../auth/auth-client";
 import { useAuth } from "../auth/AuthContext";
 

@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import type { Pool } from "pg";
-import type { ApiErrorResponse, HealthResponse, ReadinessResponse } from "@mvp-transporte/contracts";
+import type { ApiErrorResponse, HealthResponse, ReadinessResponse } from "@mvp-base/contracts";
 import { openApiDocument } from "./openapi.ts";
 import { createAuthRouter } from "./modules/auth/auth-router.ts";
 import type { AuthSettings } from "./modules/auth/auth-service.ts";

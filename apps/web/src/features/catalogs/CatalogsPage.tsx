@@ -19,7 +19,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { CatalogItem, CatalogScope, RecordStatus } from "@mvp-transporte/contracts";
+import type { CatalogItem, CatalogScope, RecordStatus } from "@mvp-base/contracts";
 import {
   createCatalog,
   createCatalogItem,

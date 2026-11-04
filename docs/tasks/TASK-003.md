@@ -1,5 +1,5 @@
 # TASK-003 — Auditoría y correo mínimos
-Estado: en revisión funcional tras validación técnica. Dependencias: 002. Issue GitHub: [#3](https://github.com/joseluiszamora/mvp-transporte/issues/3).
+Estado: en revisión funcional tras validación técnica. Dependencias: 002. Issue GitHub: [#3](https://github.com/joseluiszamora/mvp-base/issues/3).
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

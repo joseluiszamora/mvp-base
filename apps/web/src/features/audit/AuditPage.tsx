@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
-import type { AuditEventDetails, AuditEventSummary } from "@mvp-transporte/contracts";
+import type { AuditEventDetails, AuditEventSummary } from "@mvp-base/contracts";
 import { getAuditEvent, listAuditEvents } from "../auth/auth-client";
 import { useAuth } from "../auth/AuthContext";
 

@@ -28,7 +28,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { BrowserRouter, Link, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
-import type { HealthResponse, ReadinessResponse } from "@mvp-transporte/contracts";
+import type { HealthResponse, ReadinessResponse } from "@mvp-base/contracts";
 import { ActivationPage, LoginPage, RecoveryCompletePage, RecoveryRequestPage } from "./features/auth/AuthPages";
 import { getApiBaseUrl } from "./features/auth/auth-client";
 import { AuthProvider, useAuth } from "./features/auth/AuthContext";
@@ -46,13 +46,22 @@ import { NotificationsPage } from "./features/notifications/NotificationsPage";
 
 const drawerWidth = 272;
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, retry: 1 } } });
-const themeModeStorageKey = "mvp-transporte.theme-mode";
+const themeModeStorageKey = "mvp-base.theme-mode";
+const legacyThemeModeStorageKey = "mvp-transporte.theme-mode";
 type ThemeMode = "light" | "dark";
 
 function readThemeMode(): ThemeMode {
   try {
-    const savedMode = window.localStorage.getItem(themeModeStorageKey);
+    const currentMode = window.localStorage.getItem(themeModeStorageKey);
+    const savedMode = currentMode ?? window.localStorage.getItem(legacyThemeModeStorageKey);
     if (savedMode === "light" || savedMode === "dark") {
+      if (currentMode === null) {
+        try {
+          window.localStorage.setItem(themeModeStorageKey, savedMode);
+        } catch {
+          // Keep the existing preference when migration cannot be persisted.
+        }
+      }
       return savedMode;
     }
   } catch {

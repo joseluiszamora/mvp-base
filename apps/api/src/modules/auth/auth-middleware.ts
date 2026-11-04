@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { Pool } from "pg";
-import type { ApiErrorResponse } from "@mvp-transporte/contracts";
+import type { ApiErrorResponse } from "@mvp-base/contracts";
 import type { AuthSettings, AuthenticatedSession } from "./auth-service.ts";
 import { AuthServiceError, authenticateAccessToken } from "./auth-service.ts";
 

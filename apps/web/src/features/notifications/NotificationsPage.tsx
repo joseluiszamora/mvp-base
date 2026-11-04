@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, Box, Button, Checkbox, CircularProgress, FormControlLabel, MenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from "@mui/material";
-import type { EmailDeliverySummary, InstallationSmtpSettings } from "@mvp-transporte/contracts";
+import type { EmailDeliverySummary, InstallationSmtpSettings } from "@mvp-base/contracts";
 import { getInstallationSmtpSettings, getNotificationAccess, listEmailDeliveries, listEmailTemplates, saveInstallationSmtpSettings, sendSmtpTest } from "../auth/auth-client";
 import { useAuth } from "../auth/AuthContext";
 
