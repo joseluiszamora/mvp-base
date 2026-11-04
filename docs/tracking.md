@@ -44,6 +44,6 @@ Día 1: arranque/tenant; 2: login/sesiones; 3: roles/alcances; 4: catálogos/con
 ## Estado verificado 03/11/2026 — TASK-014
 - El propietario solicitó renombrar proyecto y repositorio de `mvp-transporte` a `mvp-base`.
 - Se creó la Issue GitHub [#34](https://github.com/joseluiszamora/mvp-transporte/issues/34), abierta y en desarrollo.
-- Preparación local en `task/014-renombrar-mvp-base`: manifests, imports, referencias canónicas, identidad de fixtures y compatibilidad de preferencia de tema actualizados.
+- Commit `bc4f4cc` publicado en `task/014-renombrar-mvp-base`; PR draft [#35](https://github.com/joseluiszamora/mvp-transporte/pull/35) abierto hacia `main`. Manifests, imports, referencias canónicas, identidad de fixtures y compatibilidad de preferencia de tema actualizados.
 - Lockfile actualizado solo en los nombres de workspaces; lint, typecheck, unitarias (12/12), build e integración PostgreSQL/Mailpit desechables pasaron. La primera integración falló en cuatro envíos SMTP y la repetición pasó completa.
 - El renombre remoto sigue pendiente; la issue permanece abierta hasta completar el cambio y revisar la entrega.
