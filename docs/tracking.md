@@ -33,3 +33,10 @@ Día 1: arranque/tenant; 2: login/sesiones; 3: roles/alcances; 4: catálogos/con
 ## Estado verificado 25/10/2026
 - TASK-012: ADM-09 integrada en `main` mediante PR #27 (merge commit `dd0b20c458e952b5c0af50df65e2ebf2674f90be`) y ajuste de reintentos por PR #32 (merge commit `ae86d1ad633958175cb7008e58c783b9b8e7f6e7`). CI #41 y #45 aprobaron. Validaciones locales del ajuste: lint, typecheck, build, `git diff --check`, `npm run test` (12/12) e integración PostgreSQL/Mailpit desechables. El propietario aceptó funcionalmente ADM-09 y cerró la issue #12 el 25/10/2026 después de verificar permisos de `PLATFORM_ADMIN`, persistencia y secreto SMTP, errores de validación, prueba/envío fallido/reintento, auditoría e historial con filtros y `notifications.read`. La política conserva cinco intentos con backoff exponencial con jitter desde 30 segundos; mensajes que ya agotaron intentos quedan terminales. No se usó la base persistente local ni se desplegó producción.
 - TASK-013: siguiente tarea, depende de TASK-012 aceptada; issue #13 está abierta. Alcance: pruebas end-to-end críticas, revisión de seguridad, OpenAPI final, manual de instalación, prueba local de backup/restauración de base y archivos, y guía DigitalOcean sin desplegar producción.
+
+## Estado verificado 03/11/2026
+- El propietario aceptó el desarrollo actual y cerró la Issue #13. Las verificaciones realizadas y sus resultados se registran en `docs/tasks/TASK-013.md` y en la Issue #13.
+- Pasaron lint, typecheck, 12 pruebas unitarias, build e integración contra PostgreSQL/Mailpit desechables, incluso desde un snapshot limpio instalado con `npm ci`.
+- La comparación OpenAPI encontró 77 rutas/métodos implementados y documentados, sin diferencias. La prueba de backup/restore recuperó una fila `FileLink` y sus bytes con hash SHA-256 coincidente.
+- `npm audit` reportó una vulnerabilidad alta (`body-parser@2.3.0`) y dos moderadas (`fast-uri@3.1.8`, `nodemailer@10.1.1`) en el árbol de producción. No se actualizaron dependencias.
+- El recorrido manual de los 14 escenarios de UI y la guía de DigitalOcean no quedaron realizados en esta verificación.
