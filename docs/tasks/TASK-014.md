@@ -1,5 +1,5 @@
 # TASK-014 — Renombrar el proyecto a MVP Base
-Estado: validación local completa; PR draft [#35](https://github.com/joseluiszamora/mvp-transporte/pull/35) abierto para revisión. Rama: `task/014-renombrar-mvp-base`. Issue GitHub: [#34](https://github.com/joseluiszamora/mvp-transporte/issues/34).
+Estado: renombre remoto completo; PR [#35](https://github.com/joseluiszamora/mvp-base/pull/35) abierto hacia `main`. Rama: `task/014-renombrar-mvp-base`. Issue GitHub: [#34](https://github.com/joseluiszamora/mvp-base/issues/34).
 
 ## Contexto
 El propietario define que el producto es una base administrativa reutilizable, independiente de rubro. El nombre anterior asociaba el repositorio con transporte y no corresponde al alcance aprobado.
@@ -29,7 +29,7 @@ Actualizar `package-lock.json` desde los manifests y ejecutar lint, typecheck, p
 - `npm run build`: pasó; Vite mantiene la advertencia de bundle principal de 1,127.24 kB por encima del umbral de 500 kB.
 - `npm run test:integration`: la primera ejecución llegó al flujo SMTP pero cuatro envíos fallaron; la repetición pasó todas las verificaciones de aislamiento, archivos, autenticación, permisos y correo, aplicó ocho migraciones/seed a recursos Docker desechables y los eliminó. No se usó una base persistente.
 - `git diff --check`: pasó. `npm ls` resuelve los tres workspaces con `@mvp-base`.
-- La rama y el commit se publicaron; el cambio remoto del nombre del repositorio sigue pendiente.
+- GitHub confirma el nombre `joseluiszamora/mvp-base`; el ID del repositorio se mantuvo. `origin` apunta a `git@github.com:joseluiszamora/mvp-base.git`.
 
 ## Entrega
 Commit identificable como TASK-014, enlaces canónicos y estado de implementación/validación en `docs/tracking.md`. No cerrar la issue hasta completar el cambio remoto y la revisión técnica.
