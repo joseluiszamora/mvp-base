@@ -1,5 +1,5 @@
 # TASK-009 — Archivos privados
-Estado: implementada; en revisión técnica y aceptación funcional. Dependencias: 008. Issue GitHub: [#9](https://github.com/joseluiszamora/mvp-transporte/issues/9), abierta hasta aceptación del propietario.
+Estado: implementada; en revisión técnica y aceptación funcional. Dependencias: 008. Issue GitHub: [#9](https://github.com/joseluiszamora/mvp-base/issues/9), abierta hasta aceptación del propietario.
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import type { AccountTokenInspectionResponse } from "@mvp-transporte/contracts";
+import type { AccountTokenInspectionResponse } from "@mvp-base/contracts";
 import { AuthClientError, completeActivation, completeRecovery, inspectActivation, requestRecovery } from "./auth-client";
 import { useAuth } from "./AuthContext";
 

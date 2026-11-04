@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, LinearProgress, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from "@mui/material";
-import type { EmployeeDetails, EmployeeDocumentItem, EmployeeListItem, EmployeeScopeOptions } from "@mvp-transporte/contracts";
+import type { EmployeeDetails, EmployeeDocumentItem, EmployeeListItem, EmployeeScopeOptions } from "@mvp-base/contracts";
 import { useAuth } from "../auth/AuthContext";
 import { createEmployee, deletePrivateFile, downloadPrivateFileById, getEmployee, getPrivateFileBlob, listEmployeeDocuments, listEmployeeScopeOptions, listEmployees, updateEmployee, uploadEmployeeDocument, uploadEmployeePhoto } from "../auth/auth-client";
 

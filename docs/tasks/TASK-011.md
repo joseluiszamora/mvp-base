@@ -1,5 +1,5 @@
 # TASK-011 — Consulta auditoría
-Estado: aceptada funcionalmente e integrada en `main` por PR #26. Dependencias: 010. Issue GitHub: [#11](https://github.com/joseluiszamora/mvp-transporte/issues/11) cerrada.
+Estado: aceptada funcionalmente e integrada en `main` por PR #26. Dependencias: 010. Issue GitHub: [#11](https://github.com/joseluiszamora/mvp-base/issues/11) cerrada.
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

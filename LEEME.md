@@ -1,6 +1,6 @@
 # Base compartida — paquete de instrucciones para Codex
 Fecha: 2026-10-14. Estado: especificación inicial acordada; implementación pendiente.
-Repositorio destino: https://github.com/joseluiszamora/mvp-transporte
+Repositorio destino: https://github.com/joseluiszamora/mvp-base
 
 ## Uso
 1. Copiar AGENTS.md y docs/ a la raíz del repositorio. No sobrescribir un README o instrucciones existentes sin revisar su contenido.

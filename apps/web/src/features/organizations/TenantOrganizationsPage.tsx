@@ -18,7 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { BranchItem, RecordStatus } from "@mvp-transporte/contracts";
+import type { BranchItem, RecordStatus } from "@mvp-base/contracts";
 import {
   createTenantBranch,
   createTenantCompany,

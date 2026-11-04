@@ -1,5 +1,5 @@
 # TASK-013 — Consolidación y aceptación
-Estado: aceptada funcionalmente y cerrada por el propietario el 03/11/2026. Issue GitHub: [#13](https://github.com/joseluiszamora/mvp-transporte/issues/13), cerrada como completada. La aceptación cubre el desarrollo actual; las verificaciones ejecutadas y los hallazgos se registran abajo.
+Estado: aceptada funcionalmente y cerrada por el propietario el 03/11/2026. Issue GitHub: [#13](https://github.com/joseluiszamora/mvp-base/issues/13), cerrada como completada. La aceptación cubre el desarrollo actual; las verificaciones ejecutadas y los hallazgos se registran abajo.
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

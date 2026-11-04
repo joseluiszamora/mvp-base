@@ -21,7 +21,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { OrganizationRoleItem, RoleScopeType } from "@mvp-transporte/contracts";
+import type { OrganizationRoleItem, RoleScopeType } from "@mvp-base/contracts";
 import {
   createOrganizationRole,
   createRoleAssignment,

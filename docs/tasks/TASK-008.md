@@ -1,5 +1,5 @@
 # TASK-008 — Configuración
-Estado: implementada en `task/008-configuracion`; pendiente revisión técnica y aceptación funcional. Dependencias: TASK-007 integrada por PR #20. Issue GitHub: [#8](https://github.com/joseluiszamora/mvp-transporte/issues/8), abierta hasta aceptación del propietario.
+Estado: implementada en `task/008-configuracion`; pendiente revisión técnica y aceptación funcional. Dependencias: TASK-007 integrada por PR #20. Issue GitHub: [#8](https://github.com/joseluiszamora/mvp-base/issues/8), abierta hasta aceptación del propietario.
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

@@ -1,5 +1,5 @@
 # TASK-006 — Organizaciones empresas sucursales
-Estado: integrada en `main` mediante PR #19; CI aprobada; aceptación funcional pendiente del propietario. Dependencias: 005. Issue GitHub: [#6](https://github.com/joseluiszamora/mvp-transporte/issues/6).
+Estado: integrada en `main` mediante PR #19; CI aprobada; aceptación funcional pendiente del propietario. Dependencias: 005. Issue GitHub: [#6](https://github.com/joseluiszamora/mvp-base/issues/6).
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

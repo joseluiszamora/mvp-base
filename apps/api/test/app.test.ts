@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import type { Server } from "node:http";
 import { test } from "node:test";
-import type { ApiErrorResponse, HealthResponse, ReadinessResponse } from "@mvp-transporte/contracts";
+import type { ApiErrorResponse, HealthResponse, ReadinessResponse } from "@mvp-base/contracts";
 import { createApp } from "../src/app.ts";
 
 async function withServer(

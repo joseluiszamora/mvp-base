@@ -2,7 +2,7 @@
 Aprobadas por el propietario en conversación del 14/10/2026:
 - Base independiente; diez módulos antes de distribución; backend y web primero.
 - Express TS, PostgreSQL, Prisma; React Vite TS recomendado y aceptado; Flutter posterior.
-- Inicio desde cero; GitHub joseluiszamora/mvp-transporte; monorepo; local y DigitalOcean futuro.
+- Inicio desde cero; GitHub joseluiszamora/mvp-base; monorepo; local y DigitalOcean futuro.
 - Cliente con varias empresas; usuario multiorganización; alcance por empresas/sucursales.
 - Alta y activación manual; sin suscripciones iniciales.
 - Correo/contraseña, admin incorpora usuarios; roles admin/supervisor/operador/visor; sin 2FA.
@@ -19,6 +19,8 @@ npm workspaces, API /api/v1, activación 24h/recuperación 30min, máximo inicia
 ## Registro de nuevos cambios
 Fecha | decisión | motivo | alternativas | impacto | estado/proponente.
 No cambiar silenciosamente una decisión aprobada. No fijar dependencias a versiones recordadas sin comprobar compatibilidad.
+
+- 03/11/2026: el propietario cambia el nombre del proyecto y del repositorio GitHub a `mvp-base` (`joseluiszamora/mvp-base`). Los paquetes npm usan el scope `@mvp-base`. Se conservan issuer/audience JWT, nombres de `BroadcastChannel`, Web Locks y advisory locks de PostgreSQL como identificadores estables para mantener compatibilidad entre pestañas y versiones desplegadas; no son identidad pública del producto. La preferencia de tema se migra de la clave local `mvp-transporte.theme-mode` a `mvp-base.theme-mode` al leerse.
 
 ## Implementación de TASK-001
 - 14/10/2026: shell web con MUI 9 + Emotion, React Router 7 y TanStack Query 5. MUI resuelve componentes y tema; React Router cubre la SPA prevista; TanStack Query gestiona estados de consulta API. Aplicación: shell base; no introduce permisos ni datos de negocio.

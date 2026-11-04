@@ -1,5 +1,5 @@
 # TASK-002 — Modelo de datos y políticas
-Estado: en revisión técnica; aceptación funcional pendiente del propietario. Dependencias: 001. Issue GitHub: [#2](https://github.com/joseluiszamora/mvp-transporte/issues/2).
+Estado: en revisión técnica; aceptación funcional pendiente del propietario. Dependencias: 001. Issue GitHub: [#2](https://github.com/joseluiszamora/mvp-base/issues/2).
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

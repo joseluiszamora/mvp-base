@@ -1,5 +1,5 @@
 # TASK-010 — Personal
-Estado: implementación en `task/010-personal`; PR #25 abierta hacia `main`; CI #27 aprobada, incluida la integración PostgreSQL desechable. Aceptación funcional pendiente del propietario. Dependencias: 009. Issue GitHub: [#10](https://github.com/joseluiszamora/mvp-transporte/issues/10).
+Estado: implementación en `task/010-personal`; PR #25 abierta hacia `main`; CI #27 aprobada, incluida la integración PostgreSQL desechable. Aceptación funcional pendiente del propietario. Dependencias: 009. Issue GitHub: [#10](https://github.com/joseluiszamora/mvp-base/issues/10).
 
 ## Contexto
 Leer AGENTS.md, docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md y docs/modules/ADM-05.md. Las decisiones aprobadas prevalecen.

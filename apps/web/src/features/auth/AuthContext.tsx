@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { PropsWithChildren } from "react";
-import type { AuthCredentialsResponse, CurrentUserResponse } from "@mvp-transporte/contracts";
+import type { AuthCredentialsResponse, CurrentUserResponse } from "@mvp-base/contracts";
 import {
   initializeAuth,
   loadCurrentUser,

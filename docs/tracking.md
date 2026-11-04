@@ -40,3 +40,10 @@ Día 1: arranque/tenant; 2: login/sesiones; 3: roles/alcances; 4: catálogos/con
 - La comparación OpenAPI encontró 77 rutas/métodos implementados y documentados, sin diferencias. La prueba de backup/restore recuperó una fila `FileLink` y sus bytes con hash SHA-256 coincidente.
 - `npm audit` reportó una vulnerabilidad alta (`body-parser@2.3.0`) y dos moderadas (`fast-uri@3.1.8`, `nodemailer@10.1.1`) en el árbol de producción. No se actualizaron dependencias.
 - El recorrido manual de los 14 escenarios de UI y la guía de DigitalOcean no quedaron realizados en esta verificación.
+
+## Estado verificado 03/11/2026 — TASK-014
+- El propietario solicitó renombrar proyecto y repositorio de `mvp-transporte` a `mvp-base`.
+- Se creó la Issue GitHub [#34](https://github.com/joseluiszamora/mvp-transporte/issues/34), abierta y en desarrollo.
+- Preparación local en `task/014-renombrar-mvp-base`: manifests, imports, referencias canónicas, identidad de fixtures y compatibilidad de preferencia de tema actualizados.
+- Lockfile actualizado solo en los nombres de workspaces; lint, typecheck, unitarias (12/12), build e integración PostgreSQL/Mailpit desechables pasaron. La primera integración falló en cuatro envíos SMTP y la repetición pasó completa.
+- El renombre remoto sigue pendiente; la issue permanece abierta hasta completar el cambio y revisar la entrega.

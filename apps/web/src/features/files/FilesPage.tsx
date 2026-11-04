@@ -17,7 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { FileScopeOption } from "@mvp-transporte/contracts";
+import type { FileScopeOption } from "@mvp-base/contracts";
 import { useAuth } from "../auth/AuthContext";
 import {
   deletePrivateFile,

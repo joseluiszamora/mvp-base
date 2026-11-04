@@ -1,5 +1,5 @@
 {
-  "name": "@mvp-transporte/api",
+  "name": "@mvp-base/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
     "db:seed": "prisma db seed"
   },
   "dependencies": {
-    "@mvp-transporte/contracts": "0.1.0",
+    "@mvp-base/contracts": "0.1.0",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "argon2": "0.45.1",

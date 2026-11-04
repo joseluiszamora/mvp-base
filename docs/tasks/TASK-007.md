@@ -1,5 +1,5 @@
 # TASK-007 — Catálogos
-Estado: en desarrollo en `task/007-catalogos`. TASK-006 se integró en `main` mediante PR #19; su aceptación funcional sigue pendiente del propietario. Issue GitHub: [#7](https://github.com/joseluiszamora/mvp-transporte/issues/7).
+Estado: en desarrollo en `task/007-catalogos`. TASK-006 se integró en `main` mediante PR #19; su aceptación funcional sigue pendiente del propietario. Issue GitHub: [#7](https://github.com/joseluiszamora/mvp-base/issues/7).
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

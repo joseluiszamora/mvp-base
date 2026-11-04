@@ -1,5 +1,5 @@
 # TASK-004 — Autenticación y alta administrativa
-Estado: en revisión técnica; aceptación funcional pendiente del propietario. Dependencias técnicas: TASK-003 integrado; issue GitHub [#4](https://github.com/joseluiszamora/mvp-transporte/issues/4) abierta.
+Estado: en revisión técnica; aceptación funcional pendiente del propietario. Dependencias técnicas: TASK-003 integrado; issue GitHub [#4](https://github.com/joseluiszamora/mvp-base/issues/4) abierta.
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance

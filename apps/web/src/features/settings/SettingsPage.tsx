@@ -21,7 +21,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { BusinessHourDay, BusinessHourInterval, NumberSequence, SettingKey, SettingScopeType } from "@mvp-transporte/contracts";
+import type { BusinessHourDay, BusinessHourInterval, NumberSequence, SettingKey, SettingScopeType } from "@mvp-base/contracts";
 import {
   createNumberSequence,
   getBusinessHours,

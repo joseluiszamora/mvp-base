@@ -1,5 +1,5 @@
 # TASK-005 — Roles y alcances
-Estado: implementación técnica en `task/005-roles-alcances`; aceptación funcional pendiente del propietario. Dependencias: 004. Issue GitHub: [#5](https://github.com/joseluiszamora/mvp-transporte/issues/5).
+Estado: implementación técnica en `task/005-roles-alcances`; aceptación funcional pendiente del propietario. Dependencias: 004. Issue GitHub: [#5](https://github.com/joseluiszamora/mvp-base/issues/5).
 ## Contexto
 Leer AGENTS.md y docs/product.md, architecture.md, data-model.md, security.md, access-matrix.md; consultar docs/modules/ relevantes. Criterios de módulo completan esta tarea.
 ## Objetivo y alcance
