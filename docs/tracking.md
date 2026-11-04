@@ -43,7 +43,7 @@ Día 1: arranque/tenant; 2: login/sesiones; 3: roles/alcances; 4: catálogos/con
 
 ## Estado verificado 03/11/2026 — TASK-014
 - El propietario solicitó renombrar proyecto y repositorio de `mvp-transporte` a `mvp-base`.
-- Se creó la Issue GitHub [#34](https://github.com/joseluiszamora/mvp-base/issues/34), abierta y en desarrollo.
-- Commits `bc4f4cc` y `42d1986` publicados en `task/014-renombrar-mvp-base`; PR [#35](https://github.com/joseluiszamora/mvp-base/pull/35) abierto hacia `main`. Manifests, imports, referencias canónicas, identidad de fixtures y compatibilidad de preferencia de tema actualizados.
+- Se creó la Issue GitHub [#34](https://github.com/joseluiszamora/mvp-base/issues/34), cerrada como completada tras la integración.
+- TASK-014 se integró en `main` por el PR [#35](https://github.com/joseluiszamora/mvp-base/pull/35), merge commit `ef2c6009b70ba5888f192c518bc58bcc9c4627d0`; el check remoto `validate` pasó. La entrega cambió manifests, imports, referencias canónicas e identidad de fixtures, migró la preferencia de tema y conservó identificadores internos de compatibilidad.
 - Lockfile actualizado solo en los nombres de workspaces; lint, typecheck, unitarias (12/12), build e integración PostgreSQL/Mailpit desechables pasaron. La primera integración falló en cuatro envíos SMTP y la repetición pasó completa.
-- GitHub ya confirma el repositorio `joseluiszamora/mvp-base` y `origin` usa la URL nueva. La issue permanece abierta hasta completar los checks remotos y la revisión técnica.
+- GitHub confirma `joseluiszamora/mvp-base`; `origin` usa la URL nueva. La revisión técnica y la integración quedaron completadas antes de cerrar la issue.

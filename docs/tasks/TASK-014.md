@@ -1,5 +1,5 @@
 # TASK-014 — Renombrar el proyecto a MVP Base
-Estado: renombre remoto completo; PR [#35](https://github.com/joseluiszamora/mvp-base/pull/35) abierto hacia `main`. Rama: `task/014-renombrar-mvp-base`. Issue GitHub: [#34](https://github.com/joseluiszamora/mvp-base/issues/34).
+Estado: integrada en `main` por PR [#35](https://github.com/joseluiszamora/mvp-base/pull/35), merge commit `ef2c6009b70ba5888f192c518bc58bcc9c4627d0`. Issue GitHub [#34](https://github.com/joseluiszamora/mvp-base/issues/34) cerrada.
 
 ## Contexto
 El propietario define que el producto es una base administrativa reutilizable, independiente de rubro. El nombre anterior asociaba el repositorio con transporte y no corresponde al alcance aprobado.
@@ -30,6 +30,7 @@ Actualizar `package-lock.json` desde los manifests y ejecutar lint, typecheck, p
 - `npm run test:integration`: la primera ejecución llegó al flujo SMTP pero cuatro envíos fallaron; la repetición pasó todas las verificaciones de aislamiento, archivos, autenticación, permisos y correo, aplicó ocho migraciones/seed a recursos Docker desechables y los eliminó. No se usó una base persistente.
 - `git diff --check`: pasó. `npm ls` resuelve los tres workspaces con `@mvp-base`.
 - GitHub confirma el nombre `joseluiszamora/mvp-base`; el ID del repositorio se mantuvo. `origin` apunta a `git@github.com:joseluiszamora/mvp-base.git`.
+- PR #35 se integró en `main`; el check remoto `validate` terminó con `success`.
 
 ## Entrega
-Commit identificable como TASK-014, enlaces canónicos y estado de implementación/validación en `docs/tracking.md`. No cerrar la issue hasta completar el cambio remoto y la revisión técnica.
+Entrega identificable como TASK-014, enlaces canónicos y estado de implementación/validación en `docs/tracking.md`. El cambio remoto, los checks y la revisión técnica se completaron antes de cerrar la issue.
