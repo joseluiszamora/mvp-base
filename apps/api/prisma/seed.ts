@@ -130,6 +130,13 @@ async function seed(): Promise<void> {
       update: { description },
     });
   }
+  const registeredIntegrationPermissions = await prisma.integrationPermission.findMany({
+    select: { permissionCode: true },
+  });
+  tenantPermissions.admin = [...new Set([
+    ...tenantAdminPermissionCodes,
+    ...registeredIntegrationPermissions.map(({ permissionCode }) => permissionCode),
+  ])];
 
   for (const tenant of tenants) {
     const assignedRoleName = tenant.roles.find((role) => role.code === tenant.assignedRoleCode)?.name;

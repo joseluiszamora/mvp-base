@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import { tenantAdminPermissionCodes } from "../access/permission-catalog.ts";
+import { loadTenantAdminPermissionCodes } from "../access/permission-catalog.ts";
 import { appendAuditEvent } from "../audit/audit-service.ts";
 import { createOpaqueToken, hashOpaqueToken } from "../auth/auth-crypto.ts";
 import { AuthServiceError, requireEmailAddress, type AuthSettings, type AuthenticatedSession } from "../auth/auth-service.ts";
@@ -175,7 +175,7 @@ export async function createOrganizationWithAdmin(
        VALUES ($1::uuid, $2::uuid, 'admin', 'Administrador', 'ACTIVE', CURRENT_TIMESTAMP)`,
       [roleId, organizationId],
     );
-    for (const permissionCode of tenantAdminPermissionCodes) {
+    for (const permissionCode of await loadTenantAdminPermissionCodes(client)) {
       await client.query(
         `INSERT INTO role_permissions (organization_id, role_id, permission_code)
          VALUES ($1::uuid, $2::uuid, $3)`,

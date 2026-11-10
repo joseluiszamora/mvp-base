@@ -666,6 +666,85 @@ export const openApiDocument = {
         responses: { "200": { description: "Contenido servido como adjunto con MIME detectado y no-store.", content: { "application/octet-stream": { schema: { type: "string", format: "binary" } } } }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
       },
     },
+    "/api/v1/integrations/{integrationCode}/registration": {
+      put: {
+        summary: "Registra permisos y tipos de archivos de una API de producto autenticada.", operationId: "registerIntegration",
+        security: [{ integrationKeyAuth: [] }],
+        parameters: [{ in: "path", name: "integrationCode", required: true, schema: { type: "string", pattern: "^[a-z][a-z0-9-]{0,39}$" } }],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/IntegrationRegistrationRequest" } } } },
+        responses: { "200": { description: "Registro actualizado.", content: { "application/json": { schema: { $ref: "#/components/schemas/IntegrationRegistrationResponse" } } } }, "400": { $ref: "#/components/responses/ApiError" }, "401": { $ref: "#/components/responses/ApiError" }, "409": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
+    "/api/v1/integrations/{integrationCode}/authorize": {
+      post: {
+        summary: "Valida sesión y permiso actual sobre una empresa o sucursal base.", operationId: "authorizeIntegrationResource",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [{ in: "path", name: "integrationCode", required: true, schema: { type: "string", pattern: "^[a-z][a-z0-9-]{0,39}$" } }],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/IntegrationAuthorizationRequest" } } } },
+        responses: { "200": { description: "Actor y alcance autorizados.", content: { "application/json": { schema: { $ref: "#/components/schemas/IntegrationAuthorizationResponse" } } } }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
+    "/api/v1/integrations/{integrationCode}/audit-events": {
+      post: {
+        summary: "Agrega un evento de producto con actor, tenant y alcance derivados de la sesión validada.", operationId: "appendIntegrationAuditEvent",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [{ in: "path", name: "integrationCode", required: true, schema: { type: "string", pattern: "^[a-z][a-z0-9-]{0,39}$" } }],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/IntegrationAuditEventRequest" } } } },
+        responses: { "201": { description: "Evento persistido en la auditoría común.", content: { "application/json": { schema: { $ref: "#/components/schemas/IntegrationAuditEventResponse" } } } }, "400": { $ref: "#/components/responses/ApiError" }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
+    "/api/v1/integrations/{integrationCode}/files/{resourceType}/{resourceId}": {
+      get: {
+        summary: "Lista archivos privados enlazados a un recurso externo autorizado.", operationId: "listIntegratedFiles",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [
+          { in: "path", name: "integrationCode", required: true, schema: { type: "string" } },
+          { in: "path", name: "resourceType", required: true, schema: { type: "string" } },
+          { in: "path", name: "resourceId", required: true, schema: { type: "string", format: "uuid" } },
+          { in: "query", name: "companyId", required: true, schema: { type: "string", format: "uuid" } },
+          { in: "query", name: "branchId", schema: { type: "string", format: "uuid" } },
+          { in: "query", name: "limit", schema: { type: "integer", minimum: 1, maximum: 100, default: 20 } },
+          { in: "query", name: "offset", schema: { type: "integer", minimum: 0, default: 0 } },
+          { in: "query", name: "search", schema: { type: "string", maxLength: 120 } },
+        ],
+        responses: { "200": { description: "Página de metadatos privados.", content: { "application/json": { schema: { $ref: "#/components/schemas/PageOfIntegratedFiles" } } } }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
+      },
+      post: {
+        summary: "Carga un archivo privado y lo asocia a un recurso externo registrado.", operationId: "uploadIntegratedFile",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [
+          { in: "path", name: "integrationCode", required: true, schema: { type: "string" } },
+          { in: "path", name: "resourceType", required: true, schema: { type: "string" } },
+          { in: "path", name: "resourceId", required: true, schema: { type: "string", format: "uuid" } },
+          { in: "query", name: "companyId", required: true, schema: { type: "string", format: "uuid" } },
+          { in: "query", name: "branchId", schema: { type: "string", format: "uuid" } },
+        ],
+        requestBody: { required: true, content: { "multipart/form-data": { schema: { type: "object", required: ["file"], properties: { file: { type: "string", format: "binary" } }, additionalProperties: false } } } },
+        responses: { "201": { description: "Archivo privado guardado.", content: { "application/json": { schema: { $ref: "#/components/schemas/IntegratedFileResponse" } } } }, "400": { $ref: "#/components/responses/ApiError" }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" }, "413": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
+    "/api/v1/integrations/{integrationCode}/files/{fileId}": {
+      get: {
+        summary: "Consulta metadatos de un archivo integrado aún autorizado.", operationId: "getIntegratedFileMetadata",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [{ in: "path", name: "integrationCode", required: true, schema: { type: "string" } }, { in: "path", name: "fileId", required: true, schema: { type: "string", format: "uuid" } }],
+        responses: { "200": { description: "Metadatos autorizados.", content: { "application/json": { schema: { $ref: "#/components/schemas/IntegratedFileResponse" } } } }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
+      },
+      delete: {
+        summary: "Quita el enlace y programa la purga del archivo integrado.", operationId: "requestIntegratedFileDeletion",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [{ in: "path", name: "integrationCode", required: true, schema: { type: "string" } }, { in: "path", name: "fileId", required: true, schema: { type: "string", format: "uuid" } }],
+        responses: { "204": { description: "Archivo retirado y programado para purga." }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
+    "/api/v1/integrations/{integrationCode}/files/{fileId}/content": {
+      get: {
+        summary: "Transmite el archivo privado al API integrador tras validar ambos permisos.", operationId: "downloadIntegratedFile",
+        security: [{ integrationKeyAuth: [], bearerAuth: [] }],
+        parameters: [{ in: "path", name: "integrationCode", required: true, schema: { type: "string" } }, { in: "path", name: "fileId", required: true, schema: { type: "string", format: "uuid" } }],
+        responses: { "200": { description: "Contenido privado con MIME detectado y no-store.", content: { "application/octet-stream": { schema: { type: "string", format: "binary" } } } }, "401": { $ref: "#/components/responses/ApiError" }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
     "/api/v1/platform/organizations": {
       get: {
         summary: "Lista tenants para administración de plataforma.",
@@ -774,6 +853,7 @@ export const openApiDocument = {
   components: {
     securitySchemes: {
       bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      integrationKeyAuth: { type: "apiKey", in: "header", name: "X-MVP-Integration-Key" },
     },
     responses: {
       ApiError: {
@@ -802,9 +882,9 @@ export const openApiDocument = {
     schemas: {
       AuditEventSummary: {
         type: "object", additionalProperties: false,
-        required: ["id", "companyId", "branchId", "actorId", "actorType", "action", "resourceType", "resourceId", "requestId", "createdAt"],
+        required: ["id", "integrationCode", "companyId", "branchId", "actorId", "actorType", "action", "resourceType", "resourceId", "requestId", "createdAt"],
         properties: {
-          id: { type: "string", format: "uuid" }, companyId: { type: ["string", "null"], format: "uuid" }, branchId: { type: ["string", "null"], format: "uuid" },
+          id: { type: "string", format: "uuid" }, integrationCode: { type: ["string", "null"] }, companyId: { type: ["string", "null"], format: "uuid" }, branchId: { type: ["string", "null"], format: "uuid" },
           actorId: { type: ["string", "null"], format: "uuid" }, actorType: { type: "string", enum: ["USER", "SYSTEM"] }, action: { type: "string" },
           resourceType: { type: "string" }, resourceId: { type: ["string", "null"] }, requestId: { type: "string" }, createdAt: { type: "string", format: "date-time" },
         },
@@ -948,6 +1028,82 @@ export const openApiDocument = {
       PageOfFiles: {
         type: "object", additionalProperties: false, required: ["items", "total", "limit", "offset"],
         properties: { items: { type: "array", items: { $ref: "#/components/schemas/StoredFile" } }, total: { type: "integer" }, limit: { type: "integer" }, offset: { type: "integer" } },
+      },
+      IntegrationPermissionDefinition: {
+        type: "object", additionalProperties: false, required: ["code", "description"],
+        properties: { code: { type: "string", maxLength: 100 }, description: { type: "string", maxLength: 300 } },
+      },
+      IntegrationFileResourceDefinition: {
+        type: "object", additionalProperties: false,
+        required: ["resourceType", "readPermissionCode", "uploadPermissionCode", "downloadPermissionCode", "deletePermissionCode"],
+        properties: {
+          resourceType: { type: "string", maxLength: 60 }, readPermissionCode: { type: "string", maxLength: 100 },
+          uploadPermissionCode: { type: "string", maxLength: 100 }, downloadPermissionCode: { type: "string", maxLength: 100 },
+          deletePermissionCode: { type: "string", maxLength: 100 },
+        },
+      },
+      IntegrationRegistrationRequest: {
+        type: "object", additionalProperties: false, required: ["displayName", "auditPermissionCode", "permissions", "fileResources"],
+        properties: {
+          displayName: { type: "string", minLength: 1, maxLength: 120 },
+          auditPermissionCode: { type: "string", maxLength: 100 },
+          permissions: { type: "array", minItems: 1, maxItems: 100, items: { $ref: "#/components/schemas/IntegrationPermissionDefinition" } },
+          fileResources: { type: "array", maxItems: 30, items: { $ref: "#/components/schemas/IntegrationFileResourceDefinition" } },
+        },
+      },
+      IntegrationRegistrationResponse: {
+        type: "object", additionalProperties: false, required: ["integrationCode", "auditPermissionCode", "permissions", "fileResources"],
+        properties: {
+          integrationCode: { type: "string" }, auditPermissionCode: { type: "string" },
+          permissions: { type: "array", items: { $ref: "#/components/schemas/IntegrationPermissionDefinition" } },
+          fileResources: { type: "array", items: { $ref: "#/components/schemas/IntegrationFileResourceDefinition" } },
+        },
+      },
+      IntegrationAuthorizationRequest: {
+        type: "object", additionalProperties: false, required: ["permissionCode", "companyId"],
+        properties: {
+          permissionCode: { type: "string", maxLength: 100 }, companyId: { type: "string", format: "uuid" },
+          branchId: { type: "string", format: "uuid" },
+        },
+      },
+      IntegrationAuthorizationResponse: {
+        type: "object", additionalProperties: false,
+        required: ["authorized", "actorId", "organizationId", "membershipId", "companyId", "branchId", "permissionCode"],
+        properties: {
+          authorized: { type: "boolean", const: true }, actorId: { type: "string", format: "uuid" },
+          organizationId: { type: "string", format: "uuid" }, membershipId: { type: "string", format: "uuid" },
+          companyId: { type: "string", format: "uuid" }, branchId: { type: ["string", "null"], format: "uuid" }, permissionCode: { type: "string" },
+        },
+      },
+      IntegrationAuditEventRequest: {
+        type: "object", additionalProperties: false,
+        required: ["companyId", "action", "resourceType"],
+        properties: {
+          companyId: { type: "string", format: "uuid" }, branchId: { type: "string", format: "uuid" },
+          action: { type: "string", maxLength: 100 }, resourceType: { type: "string", maxLength: 100 }, resourceId: { type: "string", maxLength: 100 },
+          before: { type: ["object", "null"], additionalProperties: true }, after: { type: ["object", "null"], additionalProperties: true },
+        },
+      },
+      IntegrationAuditEventResponse: {
+        type: "object", additionalProperties: false, required: ["id", "organizationId", "actorId"],
+        properties: { id: { type: "string", format: "uuid" }, organizationId: { type: "string", format: "uuid" }, actorId: { type: "string", format: "uuid" } },
+      },
+      IntegratedStoredFile: {
+        type: "object", additionalProperties: false,
+        required: ["id", "integrationCode", "resourceType", "resourceId", "originalName", "detectedMime", "bytes", "createdAt", "canDownload"],
+        properties: {
+          id: { type: "string", format: "uuid" }, integrationCode: { type: "string" }, resourceType: { type: "string" },
+          resourceId: { type: "string", format: "uuid" }, originalName: { type: "string", maxLength: 255 },
+          detectedMime: { type: "string", enum: ["application/pdf", "image/jpeg", "image/png", "image/webp"] },
+          bytes: { type: "integer", minimum: 1, maximum: 10485760 }, createdAt: { type: "string", format: "date-time" }, canDownload: { type: "boolean" },
+        },
+      },
+      IntegratedFileResponse: {
+        type: "object", additionalProperties: false, required: ["item"], properties: { item: { $ref: "#/components/schemas/IntegratedStoredFile" } },
+      },
+      PageOfIntegratedFiles: {
+        type: "object", additionalProperties: false, required: ["items", "total", "limit", "offset"],
+        properties: { items: { type: "array", items: { $ref: "#/components/schemas/IntegratedStoredFile" } }, total: { type: "integer" }, limit: { type: "integer" }, offset: { type: "integer" } },
       },
       LoginRequest: {
         type: "object",

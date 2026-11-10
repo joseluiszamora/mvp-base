@@ -89,6 +89,7 @@ enum FileResourceType {
   BRANCH_ATTACHMENT
   EMPLOYEE_PHOTO
   EMPLOYEE_DOCUMENT
+  INTEGRATED_RESOURCE
 }
 
 model Organization {
@@ -232,6 +233,7 @@ model Permission {
   code        String           @id @db.VarChar(100)
   description String           @db.VarChar(300)
   roleLinks   RolePermission[]
+  integrationLinks IntegrationPermission[]
 
   @@map("permissions")
 }
@@ -343,10 +345,12 @@ model AuditEvent {
   diff           Json?
   requestId      String   @map("request_id") @db.VarChar(100)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  integrationCode String? @map("integration_code") @db.VarChar(40)
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   company        Company? @relation("AuditEventCompany", fields: [companyId, organizationId], references: [id, organizationId], onDelete: Restrict)
   branch         Branch? @relation("AuditEventBranch", fields: [branchId, companyId, organizationId], references: [id, companyId, organizationId], onDelete: Restrict)
   actor          User? @relation("AuditEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  integration    Integration? @relation(fields: [integrationCode], references: [code], onDelete: Restrict)
 
   @@index([organizationId, createdAt], map: "audit_events_organization_created_idx")
   @@index([actorId, createdAt], map: "audit_events_actor_created_idx")
@@ -569,11 +573,60 @@ model FileLink {
   fileId       String           @unique(map: "file_links_file_id_key") @map("file_id") @db.Uuid
   resourceType FileResourceType @map("resource_type")
   resourceId   String           @map("resource_id") @db.Uuid
+  integrationCode String?       @map("integration_code") @db.VarChar(40)
+  externalResourceType String?  @map("external_resource_type") @db.VarChar(60)
   createdAt    DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   file         File             @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  integration Integration?      @relation(fields: [integrationCode], references: [code], onDelete: Restrict)
 
   @@index([resourceType, resourceId, createdAt], map: "file_links_resource_created_idx")
+  @@index([integrationCode, externalResourceType, resourceId, createdAt], map: "file_links_integration_resource_created_idx")
   @@map("file_links")
+}
+
+model Integration {
+  code        String                       @id @db.VarChar(40)
+  displayName String                       @map("display_name") @db.VarChar(120)
+  auditPermissionCode String               @map("audit_permission_code") @db.VarChar(100)
+  createdAt   DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  permissions IntegrationPermission[]
+  fileResources IntegrationFileResource[]
+  fileLinks    FileLink[]
+  auditEvents  AuditEvent[]
+
+  @@map("integrations")
+}
+
+model IntegrationPermission {
+  integrationCode String @map("integration_code") @db.VarChar(40)
+  permissionCode  String @unique(map: "integration_permissions_permission_code_key") @map("permission_code") @db.VarChar(100)
+  integration     Integration @relation(fields: [integrationCode], references: [code], onDelete: Restrict)
+  permission      Permission @relation(fields: [permissionCode], references: [code], onDelete: Restrict)
+  readResources   IntegrationFileResource[] @relation("IntegrationFileReadPermission")
+  uploadResources IntegrationFileResource[] @relation("IntegrationFileUploadPermission")
+  downloadResources IntegrationFileResource[] @relation("IntegrationFileDownloadPermission")
+  deleteResources IntegrationFileResource[] @relation("IntegrationFileDeletePermission")
+
+  @@id([integrationCode, permissionCode])
+  @@map("integration_permissions")
+}
+
+model IntegrationFileResource {
+  integrationCode       String @map("integration_code") @db.VarChar(40)
+  resourceType          String @map("resource_type") @db.VarChar(60)
+  readPermissionCode    String @map("read_permission_code") @db.VarChar(100)
+  uploadPermissionCode  String @map("upload_permission_code") @db.VarChar(100)
+  downloadPermissionCode String @map("download_permission_code") @db.VarChar(100)
+  deletePermissionCode  String @map("delete_permission_code") @db.VarChar(100)
+  integration           Integration @relation(fields: [integrationCode], references: [code], onDelete: Restrict)
+  readPermission        IntegrationPermission @relation("IntegrationFileReadPermission", fields: [integrationCode, readPermissionCode], references: [integrationCode, permissionCode], onDelete: Restrict)
+  uploadPermission      IntegrationPermission @relation("IntegrationFileUploadPermission", fields: [integrationCode, uploadPermissionCode], references: [integrationCode, permissionCode], onDelete: Restrict)
+  downloadPermission    IntegrationPermission @relation("IntegrationFileDownloadPermission", fields: [integrationCode, downloadPermissionCode], references: [integrationCode, permissionCode], onDelete: Restrict)
+  deletePermission      IntegrationPermission @relation("IntegrationFileDeletePermission", fields: [integrationCode, deletePermissionCode], references: [integrationCode, permissionCode], onDelete: Restrict)
+
+  @@id([integrationCode, resourceType])
+  @@map("integration_file_resources")
 }
 
 model Employee {

@@ -5,7 +5,7 @@ import { appendAuditEvent } from "../audit/audit-service.ts";
 import { enqueueEmail } from "../email/outbox-service.ts";
 import { hashOpaqueToken, createOpaqueToken } from "../auth/auth-crypto.ts";
 import { AuthServiceError, requireEmailAddress, type AuthSettings, type AuthenticatedSession } from "../auth/auth-service.ts";
-import { tenantAdminPermissionCodes } from "../access/permission-catalog.ts";
+import { loadTenantAdminPermissionCodes } from "../access/permission-catalog.ts";
 
 interface UserMembershipRow extends QueryResultRow {
   id: string;
@@ -244,6 +244,7 @@ export async function updateOrganizationMembershipStatus(
         [membership.id, organizationId, input.status],
       );
       if (input.status === "SUSPENDED") {
+        const tenantAdminCodes = await loadTenantAdminPermissionCodes(client);
         const remainingAdmins = await client.query<{ total: number }>(
           `SELECT count(DISTINCT candidate.id)::int AS total
            FROM organization_memberships AS candidate
@@ -261,7 +262,7 @@ export async function updateOrganizationMembershipStatus(
                    AND role_permission.permission_code = required.permission_code
                )
              )`,
-          [organizationId, tenantAdminPermissionCodes],
+          [organizationId, tenantAdminCodes],
         );
         if ((remainingAdmins.rows[0]?.total ?? 0) === 0) {
           throw new AuthServiceError(409, "LAST_ADMIN_REQUIRED", "La organización debe conservar al menos un administrador activo.");

@@ -1,3 +1,5 @@
+import type { Pool, QueryResultRow } from "pg";
+
 export const permissionDefinitions = [
   ["organizations.read", "Consultar organizaciones de plataforma"],
   ["organizations.create", "Crear organizaciones en plataforma"],
@@ -43,3 +45,35 @@ export const permissionDefinitions = [
 export const tenantAdminPermissionCodes = permissionDefinitions
   .map(([code]) => code)
   .filter((code) => !code.startsWith("organizations."));
+
+interface PermissionRow extends QueryResultRow {
+  code: string;
+  description: string;
+}
+
+type PermissionQueryable = Pick<Pool, "query">;
+
+const basePermissionCodeSet = new Set<string>(permissionDefinitions.map(([code]) => code));
+
+export async function loadTenantPermissionCatalog(
+  database: PermissionQueryable,
+): Promise<Array<{ code: string; description: string }>> {
+  const result = await database.query<PermissionRow>(
+    `SELECT permission.code, permission.description
+     FROM permissions AS permission
+     WHERE permission.code = ANY($1::text[])
+        OR EXISTS (
+          SELECT 1 FROM integration_permissions AS integration_permission
+          WHERE integration_permission.permission_code = permission.code
+        )
+     ORDER BY permission.code`,
+    [[...basePermissionCodeSet]],
+  );
+  return result.rows.filter((row) => !row.code.startsWith("organizations."));
+}
+
+export async function loadTenantAdminPermissionCodes(
+  database: PermissionQueryable,
+): Promise<string[]> {
+  return (await loadTenantPermissionCatalog(database)).map(({ code }) => code);
+}

@@ -2,7 +2,7 @@
 ## Decisiones
 Monolito modular. Express + TypeScript; PostgreSQL + Prisma; React + Vite + TypeScript como SPA; monorepo npm workspaces; Flutter posterior. Backend único dueño de autorización y reglas. React Router para navegación; elección de librería visual y consultas se documenta en TASK-001 sin alterar arquitectura. Instalar versiones estables compatibles y fijar lockfile; verificar documentación oficial antes de seleccionar versiones.
 ## Directorios
-apps/api/src/modules/{organizations,companies,users,auth,access,employees,settings,audit,files,notifications,catalogs}
+apps/api/src/modules/{organizations,companies,users,auth,access,employees,settings,audit,files,notifications,catalogs,integrations}
 apps/api/prisma; apps/web/src/features; packages/contracts; docs.
 contracts contiene esquemas/DTO públicos compartidos, nunca cliente Prisma ni secretos. API /api/v1 con OpenAPI; health y readiness sin información sensible.
 ## Multicliente
@@ -16,3 +16,5 @@ Docker Compose para PostgreSQL y buzón SMTP local; apps pueden ejecutarse con n
 ADM-08 guarda archivos en un driver local configurado por `FILE_STORAGE_PATH`, fuera del directorio estático web. Las descargas siempre pasan por la API y vuelven a autorizar la sesión, el tenant, el scope y la política explícita del recurso. El volumen debe persistir y respaldarse junto con la base de datos.
 
 ADM-09 mantiene SMTP como configuración singleton de instalación separada de los defaults generales. El worker consulta la fila en PostgreSQL por ciclo y solo cae a las variables de entorno cuando no hay configuración persistida; el SMTP fallido no bloquea CRUD y sigue el backoff del outbox.
+
+TASK-015 conserva la separación entre Base y APIs de producto mediante HTTP. Las integraciones se identifican con credenciales de servicio fuera de PostgreSQL y se combinan con el Bearer del usuario; Base valida sesiones, membresías y permisos en cada llamada. Los tipos de permiso se registran por namespace, mientras que el código de negocio y las entidades externas permanecen en el producto consumidor.
