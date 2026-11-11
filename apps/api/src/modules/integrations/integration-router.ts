@@ -214,6 +214,32 @@ export function createIntegrationRouter(
     response.status(201).json({ id: result.id, organizationId: result.target.organizationId, actorId: result.target.actorId });
   }));
 
+  router.get("/:integrationCode/files/:fileId/content", asyncRoute(async (request, response) => {
+    const { database: db, session } = requireContext(database, response);
+    const file = await getIntegratedFileContent(db, requireIntegrationCode(request), session,
+      bodyUuid(pathParam(request, "fileId"), "El archivo"), storageRoot);
+    const stream = createReadStream(file.path);
+    await new Promise<void>((resolveStream, rejectStream) => {
+      stream.once("open", () => {
+        response.status(200);
+        response.setHeader("Content-Type", file.item.detectedMime);
+        response.setHeader("Content-Length", String(file.item.bytes));
+        response.setHeader("Content-Disposition", `attachment; filename="download"; filename*=UTF-8''${contentDispositionName(file.item.originalName)}`);
+        response.setHeader("X-Content-Type-Options", "nosniff");
+        response.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+        response.setHeader("Referrer-Policy", "no-referrer");
+        stream.pipe(response);
+        resolveStream();
+      });
+      stream.once("error", (error: NodeJS.ErrnoException) => {
+        if (response.headersSent) response.destroy(error);
+        else if (error.code === "ENOENT") rejectStream(new AuthServiceError(404, "FILE_NOT_FOUND", "El archivo no está disponible."));
+        else rejectStream(error);
+      });
+      response.once("close", () => { if (!response.writableEnded) stream.destroy(); });
+    });
+  }));
+
   router.get("/:integrationCode/files/:resourceType/:resourceId", asyncRoute(async (request, response) => {
     const { database: db, session } = requireContext(database, response);
     const resourceType = pathParam(request, "resourceType");
@@ -246,32 +272,6 @@ export function createIntegrationRouter(
     } finally {
       await removeStoredPath(content.tempPath).catch(() => undefined);
     }
-  }));
-
-  router.get("/:integrationCode/files/:fileId/content", asyncRoute(async (request, response) => {
-    const { database: db, session } = requireContext(database, response);
-    const file = await getIntegratedFileContent(db, requireIntegrationCode(request), session,
-      bodyUuid(pathParam(request, "fileId"), "El archivo"), storageRoot);
-    const stream = createReadStream(file.path);
-    await new Promise<void>((resolveStream, rejectStream) => {
-      stream.once("open", () => {
-        response.status(200);
-        response.setHeader("Content-Type", file.item.detectedMime);
-        response.setHeader("Content-Length", String(file.item.bytes));
-        response.setHeader("Content-Disposition", `attachment; filename="download"; filename*=UTF-8''${contentDispositionName(file.item.originalName)}`);
-        response.setHeader("X-Content-Type-Options", "nosniff");
-        response.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
-        response.setHeader("Referrer-Policy", "no-referrer");
-        stream.pipe(response);
-        resolveStream();
-      });
-      stream.once("error", (error: NodeJS.ErrnoException) => {
-        if (response.headersSent) response.destroy(error);
-        else if (error.code === "ENOENT") rejectStream(new AuthServiceError(404, "FILE_NOT_FOUND", "El archivo no está disponible."));
-        else rejectStream(error);
-      });
-      response.once("close", () => { if (!response.writableEnded) stream.destroy(); });
-    });
   }));
 
   router.get("/:integrationCode/files/:fileId", asyncRoute(async (request, response) => {
