@@ -1,6 +1,6 @@
 # TASK-015 — Contratos seguros para APIs de producto
 
-**Estado:** Implementación local; prueba de integración PostgreSQL pendiente · **Prioridad:** P0 · **Rama:** `task/007-transport-integration-contract`
+**Estado:** CI completo con PostgreSQL desechable; pendiente revisión técnica/aceptación funcional · **Prioridad:** P0 · **Rama:** `task/007-transport-integration-contract` · **PR:** [#37](https://github.com/joseluiszamora/mvp-base/pull/37)
 
 Esta tarea implementa en MVP Base el contrato que mvp-transporte define como TASK-007. Se usa el identificador 015 porque TASK-007 de este repositorio ya corresponde a catálogos.
 
@@ -34,12 +34,16 @@ Permitir que una API de producto separada revalide una sesión, autorice sus per
 
 ## Validación
 
-- `npm run lint`
-- `npm run typecheck`
-- `npm test`
-- `npm run build`
-- `npm run test:integration`
-- `git diff --check`
+CI run 56, commit `f0b5d773984464a31ad9b82ffeb73991237ba198`:
+
+- `npm run lint` — pasó.
+- `npm run typecheck` — pasó.
+- `npm test` — pasó.
+- `npm run build` — pasó.
+- `npm run test:integration` — pasó con PostgreSQL y Mailpit desechables; aplicó las migraciones y validó permisos, alcance, sesión, auditoría y archivos externos.
+- Revisión del parche del PR — sin espacios al final en líneas añadidas.
+
+El primer CI encontró que la ruta de listado interceptaba la descarga de contenido y respondía 400. Se corrigió reordenando las rutas; CI run 56 confirma la descarga autenticada y el flujo completo. Los contenedores desechables se eliminaron al finalizar.
 
 ## Entrega
 
