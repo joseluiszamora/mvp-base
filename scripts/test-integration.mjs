@@ -1878,10 +1878,31 @@ async function verifyProductIntegration(database, createApp, fileStorageRoot) {
     assert.equal(link.rows[0]?.external_resource_type, "VEHICLE");
     assert.equal(link.rows[0]?.resource_id, externalVehicleId);
 
+    const addOutOfScopeFile = async (shadowCompanyId, shadowBranchId, name) => {
+      const shadowFileId = randomUUID();
+      await database.query(
+        `INSERT INTO files (
+           id, organization_id, company_id, branch_id, storage_key, original_name, detected_mime,
+           bytes, sha256, status, uploaded_by, created_at, updated_at
+         ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, $6, 'application/pdf',
+           64, $7, 'ACTIVE', $8::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [shadowFileId, organizationId, shadowCompanyId, shadowBranchId, randomUUID(), name, "a".repeat(64), userId],
+      );
+      await database.query(
+        `INSERT INTO file_links (id, file_id, resource_type, resource_id, integration_code, external_resource_type, created_at)
+         VALUES ($1::uuid, $2::uuid, 'INTEGRATED_RESOURCE', $3::uuid, 'transport', 'VEHICLE', CURRENT_TIMESTAMP)`,
+        [randomUUID(), shadowFileId, externalVehicleId],
+      );
+    };
+    await addOutOfScopeFile(companyId, otherBranchId, "otra-sucursal.pdf");
+    await addOutOfScopeFile(otherCompanyId, null, "otra-empresa.pdf");
+
     const listPath = `/integrations/transport/files/VEHICLE/${externalVehicleId}?companyId=${companyId}&branchId=${branchId}`;
     const listed = await apiRequest(baseUrl, listPath, { integrationKey, accessToken });
     assert.equal(listed.response.status, 200);
     assert.equal(listed.body.items.length, 1);
+    assert.equal(listed.body.total, 1, "El conteo excluye archivos de otros alcances dentro de la misma organización.");
+    assert.equal(listed.body.items[0]?.id, upload.body.item.id, "El listado solo incluye el archivo del alcance autorizado.");
     assert.equal(listed.body.items[0].canDownload, true);
     const metadata = await apiRequest(baseUrl, `/integrations/transport/files/${upload.body.item.id}`, { integrationKey, accessToken });
     assert.equal(metadata.response.status, 200);
