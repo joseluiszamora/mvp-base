@@ -214,13 +214,14 @@ export async function listIntegratedFiles(
   }
   const canDownload = hasPermission(context, "files.download", target) &&
     hasPermission(context, resource.downloadPermissionCode, target);
-  const params = [integrationCode, input.resourceType, input.resourceId, target.organizationId, search];
+  const params = [integrationCode, input.resourceType, input.resourceId, target.organizationId, target.companyId, target.branchId, search];
   const count = await database.query<{ total: string }>(
     `SELECT count(*)::text AS total FROM files AS file
      JOIN file_links AS link ON link.file_id = file.id
      WHERE link.integration_code = $1 AND link.external_resource_type = $2 AND link.resource_id = $3::uuid
-       AND file.organization_id = $4::uuid AND file.status = 'ACTIVE'
-       AND ($5::text IS NULL OR strpos(lower(file.original_name), lower($5)) > 0)`, params,
+       AND file.organization_id = $4::uuid AND file.company_id = $5::uuid
+       AND file.branch_id IS NOT DISTINCT FROM $6::uuid AND file.status = 'ACTIVE'
+       AND ($7::text IS NULL OR strpos(lower(file.original_name), lower($7)) > 0)`, params,
   );
   const rows = await database.query<IntegratedFileRow>(
     `SELECT file.id, file.organization_id, file.company_id, file.branch_id, file.storage_key,
@@ -229,9 +230,10 @@ export async function listIntegratedFiles(
         link.integration_code, file.created_at
      FROM files AS file JOIN file_links AS link ON link.file_id = file.id
      WHERE link.integration_code = $1 AND link.external_resource_type = $2 AND link.resource_id = $3::uuid
-       AND file.organization_id = $4::uuid AND file.status = 'ACTIVE'
-       AND ($5::text IS NULL OR strpos(lower(file.original_name), lower($5)) > 0)
-     ORDER BY file.created_at DESC, file.id LIMIT $6 OFFSET $7`,
+       AND file.organization_id = $4::uuid AND file.company_id = $5::uuid
+       AND file.branch_id IS NOT DISTINCT FROM $6::uuid AND file.status = 'ACTIVE'
+       AND ($7::text IS NULL OR strpos(lower(file.original_name), lower($7)) > 0)
+     ORDER BY file.created_at DESC, file.id LIMIT $8 OFFSET $9`,
     [...params, input.limit, input.offset],
   );
   return {
