@@ -3,7 +3,7 @@ import type { Pool, PoolClient, QueryResultRow } from "pg";
 import { appendAuditEvent } from "../audit/audit-service.ts";
 import { AuthServiceError, type AuthenticatedSession } from "../auth/auth-service.ts";
 import { hasPermission, resolveAccessContext, type AccessContext, type AccessTarget, type ScopeType } from "./access-context.ts";
-import { permissionDefinitions, tenantAdminPermissionCodes } from "./permission-catalog.ts";
+import { loadTenantAdminPermissionCodes, loadTenantPermissionCatalog } from "./permission-catalog.ts";
 
 type RoleStatus = "ACTIVE" | "INACTIVE";
 type RoleOptionKind = "memberships" | "companies" | "branches";
@@ -42,7 +42,6 @@ interface TransactionContext {
   requestId: string;
 }
 
-const tenantPermissionCodes = new Set<string>(tenantAdminPermissionCodes);
 const organizationTarget = (organizationId: string): AccessTarget => ({ organizationId });
 
 function requireOrganizationId(session: AuthenticatedSession): string {
@@ -60,7 +59,8 @@ function normalizeName(value: string): string {
   return name;
 }
 
-function validatePermissionCodes(value: readonly string[]): string[] {
+async function validatePermissionCodes(database: Pick<Pool, "query">, value: readonly string[]): Promise<string[]> {
+  const tenantPermissionCodes = new Set((await loadTenantPermissionCatalog(database)).map(({ code }) => code));
   if (value.length > tenantPermissionCodes.size || new Set(value).size !== value.length) {
     throw new AuthServiceError(400, "INVALID_REQUEST", "La lista de permisos no es válida.");
   }
@@ -148,6 +148,7 @@ async function replaceRolePermissions(
 }
 
 async function countActiveAdministrators(client: PoolClient, organizationId: string): Promise<number> {
+  const tenantAdminCodes = await loadTenantAdminPermissionCodes(client);
   const result = await client.query<{ total: number }>(
     `SELECT count(DISTINCT membership.id)::int AS total
      FROM organization_memberships AS membership
@@ -167,7 +168,7 @@ async function countActiveAdministrators(client: PoolClient, organizationId: str
              AND role_permission.permission_code = required.permission_code
          )
        )`,
-    [organizationId, tenantAdminPermissionCodes],
+    [organizationId, tenantAdminCodes],
   );
   return result.rows[0]?.total ?? 0;
 }
@@ -186,9 +187,7 @@ export async function listPermissionCatalog(
   if (!hasPermission(context, "roles.read", organizationTarget(organizationId))) {
     throw new AuthServiceError(403, "FORBIDDEN", "No tienes permiso para realizar esta acción.");
   }
-  return permissionDefinitions
-    .filter(([code]) => tenantPermissionCodes.has(code))
-    .map(([code, description]) => ({ code, description }));
+  return loadTenantPermissionCatalog(database);
 }
 
 export async function listOrganizationRoles(
@@ -238,9 +237,9 @@ export async function createOrganizationRole(
   input: { name: string; permissionCodes: readonly string[]; requestId: string },
 ): Promise<{ id: string; code: string; name: string; status: RoleStatus; permissions: string[] }> {
   const name = normalizeName(input.name);
-  const permissionCodes = validatePermissionCodes(input.permissionCodes);
   return transaction(database, async (client) => {
     const context = await loadWriteContext(client, session, "roles.create", input.requestId);
+    const permissionCodes = await validatePermissionCodes(client, input.permissionCodes);
     assertGrantablePermissions(context.actor, context.organizationId, permissionCodes);
     const id = randomUUID();
     const code = `custom-${id}`;
@@ -269,12 +268,14 @@ export async function updateOrganizationRole(
   input: { roleId: string; name?: string; status?: RoleStatus; permissionCodes?: readonly string[]; requestId: string },
 ): Promise<{ id: string; code: string; name: string; status: RoleStatus; permissions: string[] }> {
   const name = input.name === undefined ? undefined : normalizeName(input.name);
-  const permissionCodes = input.permissionCodes === undefined ? undefined : validatePermissionCodes(input.permissionCodes);
-  if (name === undefined && input.status === undefined && permissionCodes === undefined) {
+  if (name === undefined && input.status === undefined && input.permissionCodes === undefined) {
     throw new AuthServiceError(400, "INVALID_REQUEST", "La solicitud no es válida.");
   }
   return transaction(database, async (client) => {
     const context = await loadWriteContext(client, session, "roles.update", input.requestId);
+    const permissionCodes = input.permissionCodes === undefined
+      ? undefined
+      : await validatePermissionCodes(client, input.permissionCodes);
     if (permissionCodes) {
       assertGrantablePermissions(context.actor, context.organizationId, permissionCodes);
     }

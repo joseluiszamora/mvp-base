@@ -68,3 +68,13 @@ La integración desechable cubre concurrencia, refresh/replay, aislamiento entre
 
 ## Auditoría de lectura (TASK-011)
 La API de ADM-07 es de solo lectura y requiere `audit.read` en la organización seleccionada. La lista y el detalle filtran en PostgreSQL por tenant y los alcances efectivos de organización, empresa o sucursal; los eventos inaccesibles responden 404 para reducir enumeración. Las respuestas usan `Cache-Control: no-store, private`. Las diferencias se sanitizan al escribir y se vuelven a filtrar al leer, incluidas filas históricas. Para un permiso limitado a sucursal, el historial de empleados sigue la asignación actual del empleado, por lo que su visibilidad puede cambiar cuando cambien sus sucursales. La política aprobada conserva todos los eventos y no ejecuta purgas automáticas.
+
+## APIs de producto (TASK-015)
+
+- Una integración opera con un secreto de servicio configurado en `MVP_INTEGRATION_SECRETS_JSON`; el secreto no se guarda en PostgreSQL ni se entrega al navegador. Cada autorización, auditoría y operación de archivo exige además un Bearer de usuario vigente.
+- El secreto identifica al API consumidor; el Bearer identifica al actor. Base revalida sesión, usuario y membresía en cada petición y vuelve a resolver los permisos desde las asignaciones actuales.
+- El endpoint de registro acepta solo códigos `integrationCode.*`, descripciones limitadas y referencias a permisos registrados por la misma integración. Los namespaces del núcleo quedan reservados.
+- `companyId` y `branchId` se comprueban contra filas de Base y se evalúa el alcance exacto. El API de producto debe cargar el recurso externo desde su base y derivar su empresa/sucursal; nunca construye un alcance confiable con IDs del navegador.
+- El servicio de archivos requiere conjuntamente el permiso genérico de archivos (`files.read/upload/download/delete`) y el permiso de recurso externo registrado. Los bytes permanecen privados y cada descarga vuelve a autorizarse.
+- El servicio de auditoría usa el `auditPermissionCode` fijo del registro de integración; no acepta que el consumidor elija un permiso más débil. Actor, tenant y alcance salen de la sesión validada, y `before`/`after` filtran claves de identidad y datos sensibles.
+- Las credenciales tienen al menos 32 caracteres aleatorios y no se escriben en logs, auditoría ni respuestas. Las migraciones se validan en una base desechable antes de promoción.

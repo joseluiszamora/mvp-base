@@ -1,5 +1,6 @@
 import { createApp } from "./app.ts";
 import { createDatabasePool } from "./database.ts";
+import { parseIntegrationSecrets } from "./modules/integrations/integration-service.ts";
 
 function getPort(): number {
   const rawPort = process.env.API_PORT ?? "4000";
@@ -35,9 +36,11 @@ const allowedOrigins = (process.env.WEB_ORIGINS ?? "http://127.0.0.1:5173")
     return origin;
   });
 const pool = connectionString ? createDatabasePool(connectionString) : undefined;
+const integrationSecrets = parseIntegrationSecrets(process.env.MVP_INTEGRATION_SECRETS_JSON);
 const app = createApp({
   allowedOrigins,
   database: pool,
+  integrationSecrets,
   authSettings: {
     accessTokenSecret: process.env.ACCESS_TOKEN_SECRET,
     emailPayloadEncryptionKey: process.env.EMAIL_PAYLOAD_ENCRYPTION_KEY,

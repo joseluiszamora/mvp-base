@@ -80,6 +80,7 @@ export type AuditActorType = "USER" | "SYSTEM";
 
 export interface AuditEventSummary {
   id: string;
+  integrationCode: string | null;
   companyId: string | null;
   branchId: string | null;
   actorId: string | null;
@@ -336,6 +337,71 @@ export interface NumberSequence {
 }
 
 export type FileResourceType = "COMPANY_ATTACHMENT" | "BRANCH_ATTACHMENT" | "EMPLOYEE_PHOTO" | "EMPLOYEE_DOCUMENT";
+
+export interface IntegrationPermissionDefinition {
+  code: string;
+  description: string;
+}
+
+export interface IntegrationFileResourceDefinition {
+  resourceType: string;
+  readPermissionCode: string;
+  uploadPermissionCode: string;
+  downloadPermissionCode: string;
+  deletePermissionCode: string;
+}
+
+export interface IntegrationRegistrationRequest {
+  displayName: string;
+  auditPermissionCode: string;
+  permissions: IntegrationPermissionDefinition[];
+  fileResources: IntegrationFileResourceDefinition[];
+}
+
+export interface IntegrationRegistrationResponse {
+  integrationCode: string;
+  auditPermissionCode: string;
+  permissions: IntegrationPermissionDefinition[];
+  fileResources: IntegrationFileResourceDefinition[];
+}
+
+export interface IntegrationAuthorizationRequest {
+  permissionCode: string;
+  companyId: string;
+  branchId?: string;
+}
+
+export interface IntegrationAuthorizationResponse {
+  authorized: true;
+  actorId: string;
+  organizationId: string;
+  membershipId: string;
+  companyId: string;
+  branchId: string | null;
+  permissionCode: string;
+}
+
+export interface IntegrationAuditEventRequest {
+  companyId: string;
+  branchId?: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
+}
+
+export interface IntegratedStoredFile {
+  id: string;
+  integrationCode: string;
+  resourceType: string;
+  resourceId: string;
+  originalName: string;
+  detectedMime: "application/pdf" | "image/jpeg" | "image/png" | "image/webp";
+  bytes: number;
+  createdAt: string;
+  canDownload: boolean;
+}
 
 export interface FileScopeOption {
   resourceType: FileResourceType;

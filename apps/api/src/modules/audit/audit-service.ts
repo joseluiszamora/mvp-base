@@ -19,6 +19,7 @@ export interface AppendAuditEventInput {
   organizationId?: string | null;
   companyId?: string | null;
   branchId?: string | null;
+  integrationCode?: string | null;
   actor: AuditActor;
   action: string;
   resourceType: string;
@@ -131,9 +132,9 @@ export async function appendAuditEvent(
   const result = await transaction.query<{ id: string }>(
     `INSERT INTO audit_events (
        id, organization_id, company_id, branch_id, actor_id, actor_type,
-       action, resource_type, resource_id, diff, request_id
+       action, resource_type, resource_id, diff, request_id, integration_code
      ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5::uuid, $6::"AuditActorType",
-       $7, $8, $9, $10::jsonb, $11)
+       $7, $8, $9, $10::jsonb, $11, $12)
      RETURNING id`,
     [
       randomUUID(),
@@ -147,6 +148,7 @@ export async function appendAuditEvent(
       resourceId,
       diff === null ? null : JSON.stringify(diff),
       requestId,
+      input.integrationCode ?? null,
     ],
   );
   const id = result.rows[0]?.id;

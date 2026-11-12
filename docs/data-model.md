@@ -11,6 +11,9 @@ Especificación conceptual: TASK-002 concreta Prisma y migraciones conservando i
 | Role | id, organization_id, code, name, status |
 | Permission | code único global, description; catálogo definido por código |
 | RolePermission | role_id, permission_code |
+| Integration | code, display_name; consumidor de API confiable registrado |
+| IntegrationPermission | integration_code, permission_code; namespace enlazado al catálogo global |
+| IntegrationFileResource | integration_code, resource_type y permisos de lectura/carga/descarga/borrado |
 | RoleAssignment | membership_id, role_id, scope_type, company_id?, branch_id? |
 | Session | id, user_id, created_at, expires_at, revoked_at, metadata limitada |
 | RefreshToken | session_id, token_hash único, consumed_at, expires_at, successor_id? |
@@ -24,8 +27,8 @@ Especificación conceptual: TASK-002 concreta Prisma y migraciones conservando i
 | Catalog | id, code, name, description?, scope (`GLOBAL`/`ORGANIZATION`/`COMPANY`), organization_id?, company_id?, status, is_protected |
 | CatalogItem | id, catalog_id, code, name, description?, status; UUID estable para referencias históricas |
 | File | organization_id, company_id, branch_id?, storage_key UUID único, original_name, detected_mime, bytes, sha256, status (`ACTIVE`/`DELETE_PENDING`), uploaded_by, delete_requested_at? |
-| FileLink | file_id único, resource_type (`COMPANY_ATTACHMENT`/`BRANCH_ATTACHMENT`/`EMPLOYEE_PHOTO`/`EMPLOYEE_DOCUMENT`), resource_id; trigger comprueba tipo y scope contra el recurso |
-| AuditEvent | organization_id?, company_id?, branch_id?, actor_id?, action, resource_type/id, diff filtrado, request_id, created_at |
+| FileLink | file_id único, resource_type (`COMPANY_ATTACHMENT`/`BRANCH_ATTACHMENT`/`EMPLOYEE_PHOTO`/`EMPLOYEE_DOCUMENT`/`INTEGRATED_RESOURCE`), resource_id; enlaces externos guardan integration_code y external_resource_type además del scope de `File` |
+| AuditEvent | organization_id?, company_id?, branch_id?, actor_id?, integration_code?, action, resource_type/id, diff filtrado, request_id, created_at |
 | EmailTemplate | código conocido, subject/body, variables permitidas |
 | EmailOutbox | organization_id?, template, recipient, payload limitado, deduplication_key único, status, attempts, next_attempt_at |
 | EmailDelivery | outbox_id, result, timestamp, error sanitizado |
@@ -39,3 +42,5 @@ Timestamps UTC; importes futuros decimales, nunca float. No usar catálogos edit
 Los catálogos `GLOBAL` no tienen tenant/empresa y deben estar protegidos. Los de organización requieren `organization_id`; los de empresa requieren organización y una FK compuesta a una empresa de ese tenant. Índices únicos parciales separan el código global, el código por tenant y el código por empresa; las opciones son únicas por catálogo. API normaliza códigos a mayúsculas. Desactivar conserva filas; las FKs futuras a `CatalogItem` deben usar `RESTRICT`, y los módulos consumidores solo ofrecerán opciones activas de catálogos activos.
 
 El driver de archivos guarda el contenido en un volumen privado configurado por `FILE_STORAGE_PATH`; PostgreSQL conserva metadatos y un enlace explícito. `company_id` es obligatorio incluso para un adjunto de sucursal y las FKs compuestas garantizan que ambos pertenecen al mismo tenant. Los enlaces de personal solo se crean desde las rutas ADM-05: una foto debe ser JPEG/PNG/WEBP y un documento exige metadatos de tipo y fechas. Cargos y tipos documentales deben pertenecer al catálogo activo y estar disponibles para la empresa.
+
+Las integraciones se registran por API y usan códigos de permiso namespaced, asociados a `Permission`. El secreto de servicio queda fuera de la base de datos en configuración del servidor. Un `INTEGRATED_RESOURCE` no declara una FK al recurso externo: su producto conserva esa entidad y valida su titularidad antes de llamar a Base. La FK de integración y el trigger de `FileLink` exigen un tipo externo registrado; las FKs compuestas de `File` fijan tenant, empresa y sucursal a filas existentes de Base.

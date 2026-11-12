@@ -16,6 +16,8 @@ Diez módulos antes de distribución. Orden por dependencia, no por numeración 
 | TASK-010 | Personal | 009 | Integrada en `main` por PR #25; aceptación funcional confirmada y issue #10 cerrada |
 | TASK-011 | Consulta auditoría | 010 | Integrada y aceptada en `main` por PR #26; issue #11 cerrada |
 | TASK-012 | Administración de correo | 011 | Integrada en `main` por PR #27 y ajuste por PR #32; aceptada por el propietario; issue #12 cerrada |
-| TASK-013 | Consolidación y aceptación | 012 | Siguiente; issue #13 abierta; pendiente de ejecución y aceptación |
+| TASK-013 | Consolidación y aceptación | 012 | Aceptada funcionalmente el 03/11/2026; issue #13 cerrada |
+| TASK-014 | Renombrar el proyecto a MVP Base | 013 | Integrada en `main` por PR #35 |
+| TASK-015 | Contratos seguros para APIs de producto | 014 | En desarrollo en `task/007-transport-integration-contract` |
 
-La semana disponible del propietario se dedica a validar entregas incrementales. No asignar fechas de finalización sin medir avance de las primeras tareas. No hacer trabajo paralelo sobre modelo/auth antes de estabilizar contratos.
+TASK-015 implementa en MVP Base el contrato que mvp-transporte identifica como TASK-007; conserva nombres distintos porque TASK-007 de este repositorio ya corresponde a catálogos. La semana disponible del propietario se dedica a validar entregas incrementales. No asignar fechas de finalización sin medir avance de las tareas.

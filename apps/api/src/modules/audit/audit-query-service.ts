@@ -10,6 +10,7 @@ interface AuditEventRow extends QueryResultRow {
   branch_id: string | null;
   actor_id: string | null;
   actor_type: "USER" | "SYSTEM";
+  integration_code: string | null;
   action: string;
   resource_type: string;
   resource_id: string | null;
@@ -108,6 +109,7 @@ function whereSql(): string {
 function mapEvent(row: AuditEventRow) {
   return {
     id: row.id,
+    integrationCode: row.integration_code,
     companyId: row.company_id,
     branchId: row.branch_id,
     actorId: row.actor_id,
@@ -135,7 +137,7 @@ export async function listAuditEvents(database: Pool, session: AuthenticatedSess
   const where = whereSql();
   const count = await database.query<{ total: string }>(`SELECT count(*)::text AS total FROM audit_events AS event WHERE ${where}`, values);
   const rows = await database.query<AuditEventRow>(
-    `SELECT event.id, event.organization_id, event.company_id, event.branch_id, event.actor_id, event.actor_type,
+    `SELECT event.id, event.organization_id, event.company_id, event.branch_id, event.actor_id, event.actor_type, event.integration_code,
        event.action, event.resource_type, event.resource_id, event.request_id, event.created_at
      FROM audit_events AS event WHERE ${where}
      ORDER BY event.created_at DESC, event.id DESC LIMIT $11 OFFSET $12`,
@@ -150,7 +152,7 @@ export async function getAuditEvent(database: Pool, session: AuthenticatedSessio
   if (!hasAuditScope(context)) throw new AuthServiceError(403, "FORBIDDEN", "No tienes permiso para consultar la auditoría.");
   const values = filterValues(organizationId, context, { limit: 1, offset: 0 });
   const result = await database.query<AuditEventRow>(
-    `SELECT event.id, event.organization_id, event.company_id, event.branch_id, event.actor_id, event.actor_type,
+    `SELECT event.id, event.organization_id, event.company_id, event.branch_id, event.actor_id, event.actor_type, event.integration_code,
        event.action, event.resource_type, event.resource_id, event.diff, event.request_id, event.created_at
      FROM audit_events AS event WHERE ${whereSql()} AND event.id = $11::uuid LIMIT 1`,
     [...values, eventId],

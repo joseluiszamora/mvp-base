@@ -59,6 +59,12 @@ ADM-08 permite adjuntar PDF, JPEG, PNG y WEBP de hasta 10 MiB a empresas y sucur
 
 Quitar un adjunto lo oculta y marca para purga después de 24 horas. Programa `npm run files:cleanup` en el host que tenga montado el volumen. El comando purga solo registros sin enlaces que cumplieron el periodo de gracia y archivos físicos huérfanos o temporales con más de 24 horas; conserva archivos vinculados. Requiere `DATABASE_URL` y acceso de escritura al volumen configurado. No lo ejecutes contra datos persistentes sin validar primero el volumen y la conexión seleccionados.
 
+## Integración con APIs de producto
+
+Las aplicaciones de producto usan la API HTTP de Base para validar sesiones y permisos, guardar archivos externos en el volumen privado común y escribir eventos en ADM-07. Consulta [el contrato de integraciones](docs/integration/product-apis.md) y `/api/v1/openapi.json`. No importes fuentes privadas de `apps/api` desde otro repositorio ni conectes el producto a la base de datos de Base.
+
+Configura `MVP_INTEGRATION_SECRETS_JSON` como un objeto JSON por entorno; `.env.example` lo deja vacío (`{}`). Por ejemplo, `MVP_INTEGRATION_SECRETS_JSON='{"transport":"<secreto-aleatorio-de-32-caracteres-o-mas>"}'`. Guarda el secreto solo en el servidor y envía junto con él el Bearer del usuario en cada operación protegida. El registro del API consumidor añade los códigos namespaced al catálogo común de roles. El secreto nunca debe entrar al navegador, a logs o a respuestas.
+
 ## Acceso inicial y autenticación
 
 Configura tres secretos distintos en `.env`: `ACCESS_TOKEN_SECRET`, `EMAIL_PAYLOAD_ENCRYPTION_KEY` y `SMTP_SETTINGS_ENCRYPTION_KEY`. Para generar cada uno, ejecuta el siguiente comando por separado y guarda su salida solo en `.env`:

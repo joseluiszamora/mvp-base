@@ -47,3 +47,9 @@ Día 1: arranque/tenant; 2: login/sesiones; 3: roles/alcances; 4: catálogos/con
 - TASK-014 se integró en `main` por el PR [#35](https://github.com/joseluiszamora/mvp-base/pull/35), merge commit `ef2c6009b70ba5888f192c518bc58bcc9c4627d0`; el check remoto `validate` pasó. La entrega cambió manifests, imports, referencias canónicas e identidad de fixtures, migró la preferencia de tema y conservó identificadores internos de compatibilidad.
 - Lockfile actualizado solo en los nombres de workspaces; lint, typecheck, unitarias (12/12), build e integración PostgreSQL/Mailpit desechables pasaron. La primera integración falló en cuatro envíos SMTP y la repetición pasó completa.
 - GitHub confirma `joseluiszamora/mvp-base`; `origin` usa la URL nueva. La revisión técnica y la integración quedaron completadas antes de cerrar la issue.
+
+## Estado verificado 10/11/2026 — TASK-015
+- En desarrollo local en `task/007-transport-integration-contract`. Implementa el contrato que mvp-transporte denomina TASK-007; no añade reglas ni modelos de transporte a Base.
+- `npm run lint`, `npm run typecheck`, `npm test` (15/15) y `npm run build` pasaron. El build conserva la advertencia existente del bundle web principal (~1.13 MB).
+- `npm run test:integration` construyó contracts/API, pero no inició PostgreSQL: el entorno no contiene Docker CLI (`docker` no se encontró). Por tanto, la migración, autorización contextual, auditoría y ciclo de archivos aún esperan ejecución en PostgreSQL desechable.
+- No se aplicaron migraciones a una base persistente. No se creó Issue/PR ni se publicó la rama.

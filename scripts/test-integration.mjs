@@ -604,6 +604,9 @@ async function apiRequest(baseUrl, path, options = {}) {
   if (options.accessToken) {
     headers.Authorization = `Bearer ${options.accessToken}`;
   }
+  if (options.integrationKey) {
+    headers["X-MVP-Integration-Key"] = options.integrationKey;
+  }
   if (options.cookies) {
     headers.Cookie = options.cookies;
   }
@@ -630,7 +633,12 @@ async function multipartFileRequest(baseUrl, path, options) {
   if (options.extraFile) form.append("extra", new Blob([options.content], { type: options.mime }), "extra.pdf");
   const response = await fetch(`${baseUrl}/api/v1${path}`, {
     method: "POST",
-    headers: { Origin: "http://127.0.0.1:5173", connection: "close", Authorization: `Bearer ${options.accessToken}` },
+    headers: {
+      Origin: "http://127.0.0.1:5173",
+      connection: "close",
+      Authorization: `Bearer ${options.accessToken}`,
+      ...(options.integrationKey ? { "X-MVP-Integration-Key": options.integrationKey } : {}),
+    },
     body: form,
   });
   const body = response.headers.get("content-type")?.includes("application/json") ? await response.json() : Buffer.from(await response.arrayBuffer());
@@ -1642,6 +1650,312 @@ async function verifyRoleManagement(database, createApp, fileStorageRoot) {
   }
 }
 
+async function verifyProductIntegration(database, createApp, fileStorageRoot) {
+  const marker = randomUUID();
+  const organizationResult = await database.query(
+    "SELECT id FROM organizations WHERE name = 'Tenant de desarrollo A'",
+  );
+  const companyResult = await database.query(
+    "SELECT id FROM companies WHERE organization_id = $1::uuid ORDER BY id LIMIT 1",
+    [organizationResult.rows[0]?.id],
+  );
+  const branchResult = await database.query(
+    "SELECT id FROM branches WHERE company_id = $1::uuid ORDER BY id LIMIT 1",
+    [companyResult.rows[0]?.id],
+  );
+  const otherCompanyId = randomUUID();
+  const otherBranchId = randomUUID();
+  const organizationId = organizationResult.rows[0]?.id;
+  const companyId = companyResult.rows[0]?.id;
+  const branchId = branchResult.rows[0]?.id;
+  assert.ok(organizationId && companyId && branchId);
+  await database.query(
+    `INSERT INTO companies (id, organization_id, legal_name, nit, status, updated_at)
+     VALUES ($1::uuid, $2::uuid, $3, $4, 'ACTIVE', CURRENT_TIMESTAMP)`,
+    [otherCompanyId, organizationId, `TASK-015 empresa alterna ${marker}`, `INT-${marker.slice(0, 8)}`],
+  );
+  await database.query(
+    `INSERT INTO branches (id, organization_id, company_id, code, name, status, updated_at)
+     VALUES ($1::uuid, $2::uuid, $3::uuid, $4, 'Sucursal fuera del alcance', 'ACTIVE', CURRENT_TIMESTAMP)`,
+    [otherBranchId, organizationId, companyId, `OUT-${marker.slice(0, 8)}`],
+  );
+
+  const integrationKey = `task-015-${marker.replaceAll("-", "")}`;
+  const settings = {
+    accessTokenSecret: Buffer.alloc(32, 109).toString("base64"),
+    emailPayloadEncryptionKey: Buffer.alloc(32, 61).toString("base64"),
+    publicWebUrl: "http://127.0.0.1:5173",
+    secureCookies: false,
+  };
+  const app = createApp({
+    database,
+    allowedOrigins: ["http://127.0.0.1:5173"],
+    fileStorageRoot,
+    integrationSecrets: { transport: integrationKey },
+    authSettings: settings,
+    checkDatabase: async () => { await database.query("SELECT 1"); },
+  });
+  const server = app.listen(0, "127.0.0.1");
+  await new Promise((resolveListen, reject) => {
+    server.once("error", reject);
+    server.once("listening", resolveListen);
+  });
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+    const permissions = [
+      { code: "transport.vehicles.read", description: "Consultar vehículos del producto" },
+      { code: "transport.audit.write", description: "Registrar cambios de transporte en auditoría" },
+      { code: "transport.vehicle_files.read", description: "Consultar archivos de vehículos" },
+      { code: "transport.vehicle_files.upload", description: "Cargar archivos de vehículos" },
+      { code: "transport.vehicle_files.download", description: "Descargar archivos de vehículos" },
+      { code: "transport.vehicle_files.delete", description: "Retirar archivos de vehículos" },
+    ];
+    const fileResources = [{
+      resourceType: "VEHICLE",
+      readPermissionCode: "transport.vehicle_files.read",
+      uploadPermissionCode: "transport.vehicle_files.upload",
+      downloadPermissionCode: "transport.vehicle_files.download",
+      deletePermissionCode: "transport.vehicle_files.delete",
+    }];
+    const registrationPath = "/integrations/transport/registration";
+    const unauthenticatedRegistration = await apiRequest(baseUrl, registrationPath, {
+      method: "PUT", body: { displayName: "Transporte", permissions, fileResources },
+    });
+    assert.equal(unauthenticatedRegistration.response.status, 401, "El registro exige la credencial de servicio.");
+    const invalidRegistration = await apiRequest(baseUrl, registrationPath, {
+      method: "PUT", integrationKey, body: {
+        displayName: "Transporte", auditPermissionCode: "transport.audit.write",
+        permissions: [{ code: "companies.read", description: "No permitido" }], fileResources: [],
+      },
+    });
+    assert.equal(invalidRegistration.response.status, 400, "Una integración no registra permisos fuera de su namespace.");
+    const registration = await apiRequest(baseUrl, registrationPath, {
+      method: "PUT", integrationKey, body: { displayName: "Transporte", auditPermissionCode: "transport.audit.write", permissions, fileResources },
+    });
+    assert.equal(registration.response.status, 200, `La integración registra su catálogo: ${JSON.stringify(registration.body)}`);
+    assert.equal(registration.body.integrationCode, "transport");
+    assert.equal(registration.body.permissions.length, permissions.length);
+
+    const roleCatalogCount = await database.query(
+      `SELECT count(DISTINCT permission.code)::int AS total
+       FROM permissions AS permission JOIN integration_permissions AS registered ON registered.permission_code = permission.code
+       WHERE registered.integration_code = 'transport'`,
+    );
+    const defaultAdminGrantCount = await database.query(
+      `SELECT count(DISTINCT role_permission.permission_code)::int AS total
+       FROM roles AS role JOIN role_permissions AS role_permission
+         ON role_permission.role_id = role.id AND role_permission.organization_id = role.organization_id
+       WHERE role.organization_id = $1::uuid AND role.code = 'admin'
+         AND role_permission.permission_code LIKE 'transport.%'`,
+      [organizationId],
+    );
+    assert.equal(defaultAdminGrantCount.rows[0]?.total, roleCatalogCount.rows[0]?.total,
+      "Los administradores existentes reciben los nuevos permisos para poder delegarlos desde la gestión común de roles.");
+
+    const userId = randomUUID();
+    const membershipId = randomUUID();
+    const restrictedRoleId = randomUUID();
+    const catalogRoleId = randomUUID();
+    const email = `task015.transport.${marker}@example.test`;
+    const password = "Task 015 Integration Password 2026!";
+    const { hashPassword } = await import("../apps/api/dist/modules/auth/auth-crypto.js");
+    const passwordHash = await hashPassword(password);
+    await database.query(
+      `INSERT INTO users (id, normalized_email, display_name, password_hash, status, updated_at)
+       VALUES ($1::uuid, $2, 'Usuario de integración de prueba', $3, 'ACTIVE', CURRENT_TIMESTAMP)`,
+      [userId, email, passwordHash],
+    );
+    await database.query(
+      `INSERT INTO organization_memberships (id, organization_id, user_id, status, updated_at)
+       VALUES ($1::uuid, $2::uuid, $3::uuid, 'ACTIVE', CURRENT_TIMESTAMP)`,
+      [membershipId, organizationId, userId],
+    );
+    await database.query(
+      `INSERT INTO roles (id, organization_id, code, name, status, updated_at)
+       VALUES ($1::uuid, $2::uuid, $3, 'Permisos de producto limitados', 'ACTIVE', CURRENT_TIMESTAMP),
+              ($4::uuid, $2::uuid, $5, 'Lector del catálogo de permisos', 'ACTIVE', CURRENT_TIMESTAMP)`,
+      [restrictedRoleId, organizationId, `transport-test-${marker.slice(0, 8)}`, catalogRoleId, `catalog-test-${marker.slice(0, 8)}`],
+    );
+    const scopedPermissions = [
+      "transport.vehicles.read",
+      "transport.audit.write",
+      "transport.vehicle_files.read",
+      "transport.vehicle_files.upload",
+      "transport.vehicle_files.download",
+      "transport.vehicle_files.delete",
+      "files.read", "files.upload", "files.download", "files.delete",
+    ];
+    for (const permissionCode of scopedPermissions) {
+      await database.query(
+        `INSERT INTO role_permissions (organization_id, role_id, permission_code)
+         VALUES ($1::uuid, $2::uuid, $3)`,
+        [organizationId, restrictedRoleId, permissionCode],
+      );
+    }
+    await database.query(
+      `INSERT INTO role_permissions (organization_id, role_id, permission_code) VALUES ($1::uuid, $2::uuid, 'roles.read')`,
+      [organizationId, catalogRoleId],
+    );
+    await database.query(
+      `INSERT INTO role_assignments (id, organization_id, membership_id, role_id, scope_type, company_id, branch_id)
+       VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, 'BRANCH', $5::uuid, $6::uuid),
+              ($7::uuid, $2::uuid, $3::uuid, $8::uuid, 'ORGANIZATION', NULL, NULL)`,
+      [randomUUID(), organizationId, membershipId, restrictedRoleId, companyId, branchId, randomUUID(), catalogRoleId],
+    );
+
+    const login = await apiRequest(baseUrl, "/auth/login", { method: "POST", body: { email, password } });
+    assert.equal(login.response.status, 200, "El usuario de prueba obtiene una sesión seleccionada.");
+    const accessToken = login.body.accessToken;
+    const noServiceCredential = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", accessToken, body: { permissionCode: "transport.vehicles.read", companyId, branchId },
+    });
+    assert.equal(noServiceCredential.response.status, 401, "La autorización requiere la identidad del API consumidor además del usuario.");
+    const noUserSession = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", integrationKey, body: { permissionCode: "transport.vehicles.read", companyId, branchId },
+    });
+    assert.equal(noUserSession.response.status, 401, "La credencial de servicio no sustituye la sesión de usuario.");
+
+    const catalog = await apiRequest(baseUrl, "/organizations/roles/permissions", { accessToken });
+    assert.equal(catalog.response.status, 200);
+    assert.ok(catalog.body.some((item) => item.code === "transport.vehicles.read"), "Los permisos registrados aparecen en el catálogo común de roles.");
+    const allowed = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", integrationKey, accessToken, body: { permissionCode: "transport.vehicles.read", companyId, branchId },
+    });
+    assert.equal(allowed.response.status, 200);
+    assert.equal(allowed.body.actorId, userId);
+    assert.equal(allowed.body.organizationId, organizationId);
+    const deniedOtherBranch = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", integrationKey, accessToken, body: { permissionCode: "transport.vehicles.read", companyId, branchId: otherBranchId },
+    });
+    assert.equal(deniedOtherBranch.response.status, 403, "El permiso de sucursal no se amplía a otra sucursal.");
+    const deniedCompany = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", integrationKey, accessToken, body: { permissionCode: "transport.vehicles.read", companyId: otherCompanyId },
+    });
+    assert.equal(deniedCompany.response.status, 403, "El permiso de sucursal no se amplía a la empresa.");
+
+    const invalidAudit = await apiRequest(baseUrl, "/integrations/transport/audit-events", {
+      method: "POST", integrationKey, accessToken,
+      body: { companyId, branchId, actorId: "spoofed", action: "VEHICLE_UPDATED", resourceType: "transport.vehicle" },
+    });
+    assert.equal(invalidAudit.response.status, 400, "El API no acepta actor ni organización declarados por el consumidor.");
+    const audit = await apiRequest(baseUrl, "/integrations/transport/audit-events", {
+      method: "POST", integrationKey, accessToken,
+      body: {
+        companyId, branchId, action: "VEHICLE_UPDATED",
+        resourceType: "transport.vehicle", resourceId: "vehicle-42",
+        after: { status: "ACTIVE", actorId: "spoofed", organizationId: "spoofed" },
+      },
+    });
+    assert.equal(audit.response.status, 201, `El evento de integración se agrega: ${JSON.stringify(audit.body)}`);
+    const persistedAudit = await database.query(
+      `SELECT integration_code, organization_id, company_id, branch_id, actor_id, diff
+       FROM audit_events WHERE id = $1::uuid`, [audit.body.id],
+    );
+    assert.equal(persistedAudit.rows[0]?.integration_code, "transport");
+    assert.equal(persistedAudit.rows[0]?.organization_id, organizationId);
+    assert.equal(persistedAudit.rows[0]?.company_id, companyId);
+    assert.equal(persistedAudit.rows[0]?.branch_id, branchId);
+    assert.equal(persistedAudit.rows[0]?.actor_id, userId);
+    assert.deepEqual(persistedAudit.rows[0]?.diff, { after: { status: "ACTIVE" } }, "El detalle no conserva una identidad falsa proporcionada por el consumidor.");
+
+    const externalVehicleId = randomUUID();
+    const pdfContent = Buffer.from("%PDF-1.7\nTASK-015 vehicle receipt fixture\n%%EOF\n");
+    const upload = await multipartFileRequest(baseUrl,
+      `/integrations/transport/files/VEHICLE/${externalVehicleId}?companyId=${companyId}&branchId=${branchId}`,
+      { accessToken, integrationKey, filename: "vehiculo.pdf", mime: "application/pdf", content: pdfContent });
+    assert.equal(upload.response.status, 201, `El archivo del vehículo se almacena con el servicio común: ${JSON.stringify(upload.body)}`);
+    assert.equal(upload.body.item.integrationCode, "transport");
+    assert.equal(upload.body.item.resourceType, "VEHICLE");
+    assert.equal(upload.body.item.resourceId, externalVehicleId);
+    const link = await database.query(
+      `SELECT resource_type, integration_code, external_resource_type, resource_id
+       FROM file_links WHERE file_id = $1::uuid`, [upload.body.item.id],
+    );
+    assert.equal(link.rows[0]?.resource_type, "INTEGRATED_RESOURCE");
+    assert.equal(link.rows[0]?.integration_code, "transport");
+    assert.equal(link.rows[0]?.external_resource_type, "VEHICLE");
+    assert.equal(link.rows[0]?.resource_id, externalVehicleId);
+
+    const addOutOfScopeFile = async (shadowCompanyId, shadowBranchId, name) => {
+      const shadowFileId = randomUUID();
+      await database.query(
+        `INSERT INTO files (
+           id, organization_id, company_id, branch_id, storage_key, original_name, detected_mime,
+           bytes, sha256, status, uploaded_by, created_at, updated_at
+         ) VALUES ($1::uuid, $2::uuid, $3::uuid, $4::uuid, $5, $6, 'application/pdf',
+           64, $7, 'ACTIVE', $8::uuid, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [shadowFileId, organizationId, shadowCompanyId, shadowBranchId, randomUUID(), name, "a".repeat(64), userId],
+      );
+      await database.query(
+        `INSERT INTO file_links (id, file_id, resource_type, resource_id, integration_code, external_resource_type, created_at)
+         VALUES ($1::uuid, $2::uuid, 'INTEGRATED_RESOURCE', $3::uuid, 'transport', 'VEHICLE', CURRENT_TIMESTAMP)`,
+        [randomUUID(), shadowFileId, externalVehicleId],
+      );
+    };
+    await addOutOfScopeFile(companyId, otherBranchId, "otra-sucursal.pdf");
+    await addOutOfScopeFile(otherCompanyId, null, "otra-empresa.pdf");
+
+    const listPath = `/integrations/transport/files/VEHICLE/${externalVehicleId}?companyId=${companyId}&branchId=${branchId}`;
+    const listed = await apiRequest(baseUrl, listPath, { integrationKey, accessToken });
+    assert.equal(listed.response.status, 200);
+    assert.equal(listed.body.items.length, 1);
+    assert.equal(listed.body.total, 1, "El conteo excluye archivos de otros alcances dentro de la misma organización.");
+    assert.equal(listed.body.items[0]?.id, upload.body.item.id, "El listado solo incluye el archivo del alcance autorizado.");
+    assert.equal(listed.body.items[0].canDownload, true);
+    const metadata = await apiRequest(baseUrl, `/integrations/transport/files/${upload.body.item.id}`, { integrationKey, accessToken });
+    assert.equal(metadata.response.status, 200);
+    assert.equal(metadata.body.item.originalName, "vehiculo.pdf");
+    const downloaded = await fetch(`${baseUrl}/api/v1/integrations/transport/files/${upload.body.item.id}/content`, {
+      headers: { Authorization: `Bearer ${accessToken}`, "X-MVP-Integration-Key": integrationKey, connection: "close" },
+    });
+    assert.equal(downloaded.status, 200);
+    assert.deepEqual(Buffer.from(await downloaded.arrayBuffer()), pdfContent, "La descarga pasa por el servicio común y conserva los bytes.");
+    const deniedOtherBranchList = await apiRequest(baseUrl,
+      `/integrations/transport/files/VEHICLE/${externalVehicleId}?companyId=${companyId}&branchId=${otherBranchId}`,
+      { integrationKey, accessToken });
+    assert.equal(deniedOtherBranchList.response.status, 403, "Los metadatos de archivos respetan el scope exacto de sucursal.");
+    const deniedOtherBranchUpload = await multipartFileRequest(baseUrl,
+      `/integrations/transport/files/VEHICLE/${randomUUID()}?companyId=${companyId}&branchId=${otherBranchId}`,
+      { accessToken, integrationKey, filename: "denegado.pdf", mime: "application/pdf", content: pdfContent });
+    assert.equal(deniedOtherBranchUpload.response.status, 403, "No se adjuntan archivos fuera de la sucursal autorizada.");
+    const fileDelete = await apiRequest(baseUrl, `/integrations/transport/files/${upload.body.item.id}`, {
+      method: "DELETE", integrationKey, accessToken,
+    });
+    assert.equal(fileDelete.response.status, 204, "La retirada usa la autorización común de archivos.");
+    const deletedFile = await database.query(
+      `SELECT status, delete_requested_at FROM files WHERE id = $1::uuid`, [upload.body.item.id],
+    );
+    assert.equal(deletedFile.rows[0]?.status, "DELETE_PENDING", "La retirada conserva el archivo para purga diferida.");
+    assert.ok(deletedFile.rows[0]?.delete_requested_at);
+    const deletedMetadata = await apiRequest(baseUrl, `/integrations/transport/files/${upload.body.item.id}`, {
+      integrationKey, accessToken,
+    });
+    assert.equal(deletedMetadata.response.status, 404, "Un archivo retirado deja de estar disponible para lectura.");
+
+    const userSession = await database.query("SELECT id FROM sessions WHERE user_id = $1::uuid AND revoked_at IS NULL", [userId]);
+    assert.ok(userSession.rows[0]);
+    await database.query("UPDATE sessions SET revoked_at = CURRENT_TIMESTAMP WHERE id = $1::uuid", [userSession.rows[0].id]);
+    const revokedSession = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", integrationKey, accessToken, body: { permissionCode: "transport.vehicles.read", companyId, branchId },
+    });
+    assert.equal(revokedSession.response.status, 401, "Una sesión revocada no autoriza el API integrador.");
+
+    const renewedLogin = await apiRequest(baseUrl, "/auth/login", { method: "POST", body: { email, password } });
+    assert.equal(renewedLogin.response.status, 200);
+    await database.query("UPDATE organization_memberships SET status = 'SUSPENDED', updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid", [membershipId]);
+    const suspendedMembership = await apiRequest(baseUrl, "/integrations/transport/authorize", {
+      method: "POST", integrationKey, accessToken: renewedLogin.body.accessToken,
+      body: { permissionCode: "transport.vehicles.read", companyId, branchId },
+    });
+    assert.equal(suspendedMembership.response.status, 401, "Una membresía suspendida no autoriza el API integrador.");
+    process.stdout.write("TASK-015 product integration: service + session auth, registered permissions, tenant/scope checks, validated audit actor, and private external files passed.\n");
+  } finally {
+    await new Promise((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose()));
+  }
+}
+
 async function verifyAuthentication(database, smtpPort, mailpitHttpPort, createApp) {
   await database.query("DELETE FROM auth_rate_limits");
   const marker = randomUUID();
@@ -2250,6 +2564,7 @@ try {
   databasePool = createDatabasePool(testDatabaseUrl);
   await verifyDataModel(databasePool);
   await verifyRoleManagement(databasePool, createApp, fileStorageRoot);
+  await verifyProductIntegration(databasePool, createApp, fileStorageRoot);
   await verifyAuthentication(databasePool, hostPorts.mailpitSmtp, hostPorts.mailpitHttp, createApp);
   await verifyAuditAndEmail(databasePool, hostPorts.mailpitSmtp, hostPorts.mailpitHttp);
   const app = createApp({
