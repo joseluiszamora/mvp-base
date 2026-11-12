@@ -1,6 +1,6 @@
 # TASK-015 — Contratos seguros para APIs de producto
 
-**Estado:** CI completo con PostgreSQL desechable; pendiente revisión técnica/aceptación funcional · **Prioridad:** P0 · **Rama:** `task/007-transport-integration-contract` · **PR:** [#37](https://github.com/joseluiszamora/mvp-base/pull/37)
+**Estado:** CI y revisión técnica completados; pendiente aceptación funcional del propietario · **Prioridad:** P0 · **Rama:** `task/007-transport-integration-contract` · **PR:** [#37](https://github.com/joseluiszamora/mvp-base/pull/37)
 
 Esta tarea implementa en MVP Base el contrato que mvp-transporte define como TASK-007. Se usa el identificador 015 porque TASK-007 de este repositorio ya corresponde a catálogos.
 
@@ -33,6 +33,8 @@ Permitir que una API de producto separada revalide una sesión, autorice sus per
 - Migración incremental; OpenAPI y contratos publicados; pruebas aisladas sin tocar bases persistentes.
 
 ## Validación
+
+CI run 59, commit de código `933106429797d5d488279758ca3763c6e43d66da` — pasó después de corregir el aislamiento del listado de archivos por empresa y sucursal y agregar una prueba de regresión que confirma que no se filtren archivos de otros alcances.
 
 CI run 56, commit `f0b5d773984464a31ad9b82ffeb73991237ba198`:
 
