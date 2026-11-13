@@ -64,6 +64,10 @@ Cada llamada envía el manifiesto completo de permisos y recursos vigente de la 
 
 Una concesión de sucursal no permite operar en otra sucursal ni en toda la empresa. Para una operación de empresa omite `branchId`; una concesión de sucursal no cubre ese alcance.
 
+## Resolver el empleado de la sesión
+
+`GET /api/v1/employees/me` resuelve el empleado activo vinculado al usuario autenticado dentro de la organización seleccionada en la sesión. No recibe identificadores de usuario, empleado, organización ni empresa. La respuesta contiene únicamente `employeeId`, `organizationId` y `companyId`; no expone datos personales, laborales ni permisos de Base. Requiere una sesión vigente y membresía activa, y devuelve `404 EMPLOYEE_NOT_FOUND` cuando no hay una relación activa disponible. No requiere `employees.read`, `employees.personal.read` ni `users.read`, y no concede por sí sola acceso a una aplicación de producto. El API consumidor debe comprobar sus propios permisos después de cargar el recurso y derivar el alcance desde su base.
+
 ## Archivos externos privados
 
 Usa `POST /api/v1/integrations/{integrationCode}/files/{resourceType}/{resourceId}?companyId=...&branchId=...` con `multipart/form-data` y el campo `file`. `resourceType` debe estar registrado; el identificador externo es UUID. Base conserva los bytes en el mismo volumen privado y crea `File`/`FileLink` con integración, recurso externo, empresa, sucursal y usuario validados. No devuelve una URL pública.

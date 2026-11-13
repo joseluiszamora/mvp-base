@@ -6,7 +6,7 @@ import { AuthServiceError, type AuthSettings } from "../auth/auth-service.ts";
 import { authorizeFileResource, storeUploadedFile } from "../files/files-service.ts";
 import { resolveFileStorageRoot, removeStoredPath } from "../files/file-storage.ts";
 import { receiveMultipartUpload } from "../files/multipart-upload.ts";
-import { createEmployee, getEmployee, listEmployeeDocuments, listEmployeeScopeOptions, listEmployees, updateEmployee, type EmployeeMutationInput } from "./employees-service.ts";
+import { createEmployee, getCurrentEmployee, getEmployee, listEmployeeDocuments, listEmployeeScopeOptions, listEmployees, updateEmployee, type EmployeeMutationInput } from "./employees-service.ts";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const allowedFields = new Set(["companyId", "internalCode", "firstNames", "lastNames", "personalDocumentNumber", "personalPhone", "personalEmail", "personalAddress", "positionId", "hireDate", "status", "userId", "branchIds"]);
@@ -100,6 +100,11 @@ export function createEmployeesRouter(database: Pool | undefined, settings: Auth
   router.get("/scope-options", authenticate, asyncRoute(async (_request, response) => {
     const { database: db, session } = requireContext(database, response);
     response.status(200).json(await listEmployeeScopeOptions(db, session));
+  }));
+
+  router.get("/me", authenticate, asyncRoute(async (_request, response) => {
+    const { database: db, session } = requireContext(database, response);
+    response.status(200).json(await getCurrentEmployee(db, session));
   }));
 
   router.get("/", authenticate, asyncRoute(async (request, response) => {
