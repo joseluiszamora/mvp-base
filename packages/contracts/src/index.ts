@@ -438,6 +438,17 @@ export interface EmployeeListItem {
   branches: Array<{ id: string; code: string; name: string }>;
 }
 
+/** Minimal identity context for the authenticated user; it contains no personal or employment details. */
+export interface CurrentEmployeeContext {
+  employeeId: string;
+  organizationId: string;
+  companyId: string;
+}
+
+export interface CurrentEmployeeContextResponse {
+  item: CurrentEmployeeContext;
+}
+
 export interface EmployeeDetails extends EmployeeListItem {
   canReadPersonalData: boolean;
   canReadLinkedUser: boolean;

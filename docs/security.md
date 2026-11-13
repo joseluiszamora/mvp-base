@@ -78,3 +78,9 @@ La API de ADM-07 es de solo lectura y requiere `audit.read` en la organización 
 - El servicio de archivos requiere conjuntamente el permiso genérico de archivos (`files.read/upload/download/delete`) y el permiso de recurso externo registrado. Los bytes permanecen privados y cada descarga vuelve a autorizarse.
 - El servicio de auditoría usa el `auditPermissionCode` fijo del registro de integración; no acepta que el consumidor elija un permiso más débil. Actor, tenant y alcance salen de la sesión validada, y `before`/`after` filtran claves de identidad y datos sensibles.
 - Las credenciales tienen al menos 32 caracteres aleatorios y no se escriben en logs, auditoría ni respuestas. Las migraciones se validan en una base desechable antes de promoción.
+
+## Contexto mínimo de empleado autenticado (TASK-016)
+
+- `GET /api/v1/employees/me` obtiene usuario, organización y membresía únicamente de la sesión autenticada. La consulta confirma de nuevo el estado activo de esos registros y exige empleado y empresa activos dentro de la organización seleccionada.
+- El endpoint devuelve solo los UUID de empleado, organización y empresa del propio actor. No permite elegir una identidad con parámetros ni devuelve campos laborales/personales, datos de cuenta o permisos.
+- La ruta no exige permisos administrativos de lectura de empleados o usuarios y no crea una autorización de transporte. Cada API de producto carga sus recursos y aplica sus permisos después de obtener el contexto mínimo.

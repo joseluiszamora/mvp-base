@@ -105,3 +105,8 @@ No cambiar silenciosamente una decisión aprobada. No fijar dependencias a versi
 - 10/11/2026: cada producto registra permisos con su propio namespace y un permiso fijo `auditPermissionCode`. La API de roles lee ese catálogo de la base y el rol `admin` recibe los códigos al registrarse para que la administración común pueda delegarlos; el endpoint de auditoría no permite escoger un permiso alternativo.
 - 10/11/2026: los archivos de entidades externas usan el servicio, volumen y metadatos existentes. `FileLink` guarda integración y tipo externo; `File` guarda el scope Base validado. El ID de producto no prueba titularidad y el consumidor debe cargar su fila y derivar empresa/sucursal antes de la llamada.
 - 10/11/2026: los eventos de producto guardan `integration_code`; actor, organización, empresa y sucursal se derivan de la sesión y del scope comprobado. El consumidor no puede suministrar esos campos superiores.
+
+## Implementación de TASK-016 — Contexto mínimo del empleado autenticado
+- 12/11/2026: `GET /api/v1/employees/me` resuelve el empleado activo asociado al usuario y membresía de la sesión dentro de la organización seleccionada. La ruta no acepta IDs de identidad del consumidor y responde únicamente `employeeId`, `organizationId` y `companyId`.
+- 12/11/2026: el contrato no requiere `employees.read`, `employees.personal.read` ni `users.read`; vincular una cuenta continúa sin conceder acceso a una aplicación de producto. El producto debe autorizar cada operación con sus propios permisos registrados y alcance derivado de sus filas.
+- 12/11/2026: no se añade migración; se reutilizan `employees.user_id`, su unicidad por organización y los estados de usuario, membresía, organización, empresa y empleado ya existentes.

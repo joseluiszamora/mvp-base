@@ -53,3 +53,10 @@ Día 1: arranque/tenant; 2: login/sesiones; 3: roles/alcances; 4: catálogos/con
 - `npm run lint`, `npm run typecheck`, `npm test` (15/15) y `npm run build` pasaron. El build conserva la advertencia existente del bundle web principal (~1.13 MB).
 - `npm run test:integration` construyó contracts/API, pero no inició PostgreSQL: el entorno no contiene Docker CLI (`docker` no se encontró). Por tanto, la migración, autorización contextual, auditoría y ciclo de archivos aún esperan ejecución en PostgreSQL desechable.
 - No se aplicaron migraciones a una base persistente. No se creó Issue/PR ni se publicó la rama.
+
+## Estado verificado 12/11/2026 — TASK-016
+- En desarrollo local en `task/016-employee-self-context`, autorizada por el propietario para cubrir la dependencia de identidad de mvp-transporte TASK-005.
+- Añade `GET /api/v1/employees/me`, contrato TypeScript/OpenAPI y documentación de seguridad/integración. La búsqueda usa únicamente el usuario y membresía de sesión, y devuelve los IDs mínimos del empleado activo y su alcance Base.
+- No se requiere migración; el esquema ya vincula empleados opcionalmente a usuarios y garantiza unicidad por organización. No se aplicaron migraciones ni se usó una base persistente.
+- `npm run lint`, `npm run typecheck` y `npm run build` pasaron. El primer build dentro del sandbox no pudo escribir un temporal bajo `node_modules`; el reintento autorizado con acceso ampliado pasó. Se conserva la advertencia existente de bundle web principal (~1.13 MB).
+- No se ejecutaron pruebas unitarias ni de integración, y no se aplicaron migraciones porque no hay cambios de esquema.

@@ -561,6 +561,12 @@ export const openApiDocument = {
         responses: { "200": { description: "Opciones filtradas por permisos efectivos.", content: { "application/json": { schema: { $ref: "#/components/schemas/EmployeeScopeOptions" } } } }, "403": { $ref: "#/components/responses/ApiError" } },
       },
     },
+    "/api/v1/employees/me": {
+      get: {
+        summary: "Resuelve únicamente el empleado activo asociado a la sesión autenticada y organización seleccionada.", operationId: "getCurrentEmployee", security: [{ bearerAuth: [] }],
+        responses: { "200": { description: "IDs operativos mínimos del empleado vinculado al actor autenticado.", content: { "application/json": { schema: { $ref: "#/components/schemas/CurrentEmployeeContextResponse" } } } }, "403": { $ref: "#/components/responses/ApiError" }, "404": { $ref: "#/components/responses/ApiError" } },
+      },
+    },
     "/api/v1/employees": {
       get: {
         summary: "Lista únicamente datos laborales mínimos de empleados en empresas y sucursales autorizadas.", operationId: "listEmployees", security: [{ bearerAuth: [] }],
@@ -936,6 +942,8 @@ export const openApiDocument = {
         }],
       },
       EmployeeDetailsResponse: { type: "object", additionalProperties: false, required: ["item"], properties: { item: { $ref: "#/components/schemas/EmployeeDetails" } } },
+      CurrentEmployeeContext: { type: "object", additionalProperties: false, required: ["employeeId", "organizationId", "companyId"], properties: { employeeId: { type: "string", format: "uuid" }, organizationId: { type: "string", format: "uuid" }, companyId: { type: "string", format: "uuid" } } },
+      CurrentEmployeeContextResponse: { type: "object", additionalProperties: false, required: ["item"], properties: { item: { $ref: "#/components/schemas/CurrentEmployeeContext" } } },
       PageOfEmployees: { type: "object", additionalProperties: false, required: ["items", "total", "limit", "offset"], properties: { items: { type: "array", items: { $ref: "#/components/schemas/EmployeeListItem" } }, total: { type: "integer" }, limit: { type: "integer" }, offset: { type: "integer" } } },
       EmployeeMutation: {
         type: "object", additionalProperties: false,

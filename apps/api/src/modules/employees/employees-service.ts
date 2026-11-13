@@ -203,6 +203,29 @@ export async function getEmployee(database: Pool, session: AuthenticatedSession,
   return { item: mapDetails(employee, context) };
 }
 
+/** Resolves only the active employee linked to the authenticated user in the selected organization. */
+export async function getCurrentEmployee(database: Pool, session: AuthenticatedSession) {
+  const organizationId = requireOrganizationId(session);
+  const membershipId = session.selectedMembershipId;
+  if (!membershipId) throw new AuthServiceError(403, "ORGANIZATION_REQUIRED", "Selecciona una organización activa para continuar.");
+
+  const result = await database.query<{ employee_id: string; organization_id: string; company_id: string }>(
+    `SELECT employee.id AS employee_id, employee.organization_id, employee.company_id
+     FROM employees AS employee
+     JOIN organizations AS organization ON organization.id = employee.organization_id AND organization.status = 'ACTIVE'
+     JOIN companies AS company ON company.id = employee.company_id AND company.organization_id = employee.organization_id AND company.status = 'ACTIVE'
+     JOIN users AS app_user ON app_user.id = employee.user_id AND app_user.status = 'ACTIVE'
+     JOIN organization_memberships AS membership ON membership.id = $3::uuid AND membership.organization_id = employee.organization_id
+       AND membership.user_id = app_user.id AND membership.status = 'ACTIVE'
+     WHERE employee.organization_id = $1::uuid AND employee.user_id = $2::uuid AND employee.status = 'ACTIVE'
+     LIMIT 2`,
+    [organizationId, session.userId, membershipId],
+  );
+  const employee = result.rows[0];
+  if (result.rows.length !== 1 || !employee) throw new AuthServiceError(404, "EMPLOYEE_NOT_FOUND", "No hay un empleado activo asociado a la sesión.");
+  return { item: { employeeId: employee.employee_id, organizationId: employee.organization_id, companyId: employee.company_id } };
+}
+
 async function loadCompany(database: Pick<Pool, "query"> | Pick<PoolClient, "query">, organizationId: string, companyId: string, lock = false) {
   const result = await database.query<{ organization_status: string; company_status: string }>(
     `SELECT organization.status AS organization_status, company.status AS company_status FROM companies AS company
