@@ -1,6 +1,6 @@
 # TASK-016 — Contexto mínimo del empleado autenticado
 
-**Estado:** En revisión · **Prioridad:** P1 · **Rama:** `task/016-employee-self-context`
+**Estado:** Completada · **Prioridad:** P1 · **Rama:** `task/016-employee-self-context`
 
 ## Contexto
 
@@ -42,6 +42,10 @@ Exponer una operación autenticada que resuelva, dentro de la organización sele
 - `npm run typecheck`: pasó.
 - `npm run build`: pasó. Vite reporta el bundle existente de la web por encima de 500 kB.
 - No se ejecutaron pruebas unitarias ni de integración, de acuerdo con el alcance de esta tarea.
+
+## Integración — 2026-11-13
+
+- Integrada en `main` mediante el PR #38, merge commit `fd795e4c25230c2d3cdec81f1b7fcbb7c921ad44`.
 
 ## Validación
 
