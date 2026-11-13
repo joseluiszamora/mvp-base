@@ -1,6 +1,6 @@
 # TASK-016 — Contexto mínimo del empleado autenticado
 
-**Estado:** En desarrollo · **Prioridad:** P1 · **Rama:** `task/016-employee-self-context`
+**Estado:** En revisión · **Prioridad:** P1 · **Rama:** `task/016-employee-self-context`
 
 ## Contexto
 
@@ -35,6 +35,13 @@ Exponer una operación autenticada que resuelva, dentro de la organización sele
 - La ruta no requiere `employees.read`, `employees.personal.read` ni `users.read`, y no otorga permisos de producto.
 - Contracts, OpenAPI, seguridad y guía de APIs de producto documentan el contrato.
 - No se requiere migración: `employees.user_id` y su unicidad por organización ya existen.
+
+## Validación local — 2026-11-13
+
+- `npm run lint`: pasó.
+- `npm run typecheck`: pasó.
+- `npm run build`: pasó. Vite reporta el bundle existente de la web por encima de 500 kB.
+- No se ejecutaron pruebas unitarias ni de integración, de acuerdo con el alcance de esta tarea.
 
 ## Validación
 
